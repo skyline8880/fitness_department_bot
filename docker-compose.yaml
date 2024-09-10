@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  fit_bot:
+    image: skyline8880/fit_bot:latest
+    container_name: fit_bot
+    restart: on-failure
+    environment:
+      - TZ=Europe/Moscow
+    env_file:
+      - .env
+    ports:
+      - 86:80
