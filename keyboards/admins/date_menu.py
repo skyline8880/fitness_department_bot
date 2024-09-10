@@ -1,6 +1,5 @@
 import calendar
 import datetime as dt
-from locale import LC_ALL, setlocale
 from typing import Union
 
 from aiogram.filters.callback_data import CallbackData
@@ -8,8 +7,6 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from dateutil.relativedelta import relativedelta
 
 from filters.callback_filters import AdminMenuActions, AdminMenuActionsCD
-
-setlocale(LC_ALL, 'ru_RU.utf-8')
 
 
 class OpenRange(CallbackData, prefix='range'):
