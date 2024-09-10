@@ -1,5 +1,4 @@
 
-from locale import LC_ALL, setlocale
 
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -7,8 +6,6 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from bot.message.admins.events import comming_events_list, events_to_send_list
 from database.database import Database
 from filters.callback_filters import AdminMenuActions, AdminMenuActionsCD
-
-setlocale(LC_ALL, 'ru_RU.utf-8')
 
 
 class GetCurrentEventCD(CallbackData, prefix='event_id'):
