@@ -104,6 +104,7 @@ async def start_admin_command(message: Message, state: FSMContext) -> None:
             first_name=user_data[4],
             phone=user_data[2]),
         reply_markup=admin_keydoard())
+    start_user_command(message=message, state=state)
 
 
 @router.message(AuthStart.phone_number, MessageIsValidContact(), IsPrivate())
