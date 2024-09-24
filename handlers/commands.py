@@ -132,7 +132,6 @@ async def start_admin_command(message: Message, state: FSMContext) -> None:
         reply_markup=admin_keydoard())
 
 
-
 @router.message(AuthStart.phone_number, MessageIsValidContact(), IsPrivate())
 async def get_contact(message: Message, state: FSMContext) -> None:
     phone_number = message.contact.phone_number.replace('+', '')
