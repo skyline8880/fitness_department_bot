@@ -19,8 +19,7 @@ router = Router()
 @router.callback_query(
         ActionsCD.filter(F.action == Action.TOSUBDIVS),
         IsPrivate(),
-        IsAuth(),
-        ~IsAdmin())
+        IsAuth())
 async def to_subdivs_after_auth(query: CallbackQuery) -> None:
     action = query.data.split(':')[-1]
     await query.answer(action)
@@ -35,8 +34,7 @@ async def to_subdivs_after_auth(query: CallbackQuery) -> None:
 @router.callback_query(
         ActionsCD.filter(F.action == Action.TOMENU),
         IsPrivate(),
-        IsAuth(),
-        ~IsAdmin())
+        IsAuth())
 async def to_menu_action(query: CallbackQuery) -> None:
     action = query.data.split(':')[-1]
     await query.answer(action)
@@ -75,8 +73,7 @@ async def to_menu_action(query: CallbackQuery) -> None:
 @router.callback_query(
         MenuCD.filter(F.menu_act.in_({Menu.CLUB, Menu.SUBDIV})),
         IsPrivate(),
-        IsAuth(),
-        ~IsAdmin())
+        IsAuth())
 async def menu_buttons_choose(query: CallbackQuery) -> None:
     action = query.data.split(':')[-1]
     await query.answer(action)
@@ -96,8 +93,7 @@ async def menu_buttons_choose(query: CallbackQuery) -> None:
 @router.callback_query(
         DepartmentsCD.filter(),
         IsPrivate(),
-        IsAuth(),
-        ~IsAdmin())
+        IsAuth())
 async def choose_department(query: CallbackQuery) -> None:
     db = Database()
     dep_id, status = query.data.split(':')[1:]
@@ -123,8 +119,7 @@ async def choose_department(query: CallbackQuery) -> None:
 @router.callback_query(
         ReferencesCD.filter(),
         IsPrivate(),
-        IsAuth(),
-        ~IsAdmin())
+        IsAuth())
 async def choose_subdivision(query: CallbackQuery) -> None:
     db = Database()
     subdiv_id, status = query.data.split(':')[1:]
