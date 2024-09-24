@@ -9,7 +9,7 @@ from bot.message.welcome import welcome_after_auth_choose_subdivision_message
 from database.database import Database
 from filters.callback_filters import (Action, ActionsCD, DepartmentsCD, Menu,
                                       MenuCD, ReferencesCD)
-from filters.filters import IsAdmin, IsAuth, IsPrivate
+from filters.filters import IsAuth, IsPrivate
 from keyboards.checkbox_menus import department_keydoard, subdivision_keydoard
 from keyboards.menu_keyboard import menu_keyboard
 
