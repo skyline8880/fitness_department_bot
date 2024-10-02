@@ -1,4 +1,5 @@
 import calendar
+import locale
 import datetime as dt
 from typing import Union
 
@@ -7,6 +8,9 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from dateutil.relativedelta import relativedelta
 
 from filters.callback_filters import AdminMenuActions, AdminMenuActionsCD
+
+# Устанавливаем локаль для поддержки русского языка
+locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 
 
 class OpenRange(CallbackData, prefix='range'):
@@ -50,36 +54,58 @@ class UserDatePicker():
         self.date = None
         self.month_name = None
         self.back_button = []
+     
+MONTHS_RUS = {
+    1: "Январь",
+    2: "Февраль",
+    3: "Март",
+    4: "Апрель",
+    5: "Май",
+    6: "Июнь",
+    7: "Июль",
+    8: "Август",
+    9: "Сентябрь",
+    10: "Октябрь",
+    11: "Ноябрь",
+    12: "Декабрь",
+}   
+def range_options(self, r_type: str, button: Union[str, int]):
+    add = self.date + relativedelta(years=1)
+    take = self.date - relativedelta(years=1)
+    if r_type == 'month':
+        add = self.date + relativedelta(months=1)
+        take = self.date - relativedelta(months=1)
+    
+    month_name = MONTHS_RUS.get(self.month)  # Получаем русское название месяца
+    return [
+        InlineKeyboardButton(
+            text=f'{self.previous}',
+            callback_data=DateMove(
+                year=take.year,
+                month=take.month,
+                day=take.day).pack()),
+        InlineKeyboardButton(
+            text=f'{button}',
+            callback_data=OpenRange(
+                year=self.year,
+                month=self.month,
+                day=self.day,
+                r_type=r_type).pack()),
+        InlineKeyboardButton(
+            text=f'{self.next}',
+            callback_data=DateMove(
+                year=add.year,
+                month=add.month,
+                day=add.day).pack()),
+        InlineKeyboardButton(
+            text=f'{month_name}',
+            callback_data=DatePick(
+                year=self.year,
+                month=self.month,
+                day=self.day).pack())
+    ]
 
-    def range_options(self, r_type: str, button: Union[str, int]):
-        add = self.date + relativedelta(years=1)
-        take = self.date - relativedelta(years=1)
-        if r_type == 'month':
-            add = self.date + relativedelta(months=1)
-            take = self.date - relativedelta(months=1)
-        return [
-            InlineKeyboardButton(
-                text=f'{self.previous}',
-                callback_data=DateMove(
-                    year=take.year,
-                    month=take.month,
-                    day=take.day).pack()),
-            InlineKeyboardButton(
-                text=f'{button}',
-                callback_data=OpenRange(
-                    year=self.year,
-                    month=self.month,
-                    day=self.day,
-                    r_type=r_type).pack()),
-            InlineKeyboardButton(
-                text=f'{self.next}',
-                callback_data=DateMove(
-                    year=add.year,
-                    month=add.month,
-                    day=add.day).pack()),
-        ]
-
-    def week_range(self):
+def week_range(self):
         weeks_buttons = []
         for week in self.weeks.split():
             weeks_buttons.append(
@@ -89,8 +115,22 @@ class UserDatePicker():
                         week=week).pack())
             )
         return weeks_buttons
+    # Словари с русскими названиями месяцев и дней недели
 
-    def days_range(self):
+
+DAYS_OF_WEEK_RUS = {
+    0: "Понедельник",
+    1: "Вторник",
+    2: "Среда",
+    3: "Четверг",
+    4: "Пятница",
+    5: "Суббота",
+    6: "Воскресенье",
+}
+
+
+
+def days_range(self):
         result = []
         days_data = calendar.monthcalendar(year=self.year, month=self.month)
         for week in days_data:
@@ -99,6 +139,8 @@ class UserDatePicker():
                 name = day
                 if day == 0:
                     name = '󠀠 '
+                else:
+                 name = DAYS_OF_WEEK_RUS[day]  # Получаем русское название дня недели    
                 weeks_days.append(
                     InlineKeyboardButton(
                         text=f'{name}',
@@ -109,7 +151,7 @@ class UserDatePicker():
             result.append(weeks_days)
         return result
 
-    def __call__(
+def __call__(
             self,
             year: int = None,
             month: int = None,
