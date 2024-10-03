@@ -1,13 +1,14 @@
 import calendar
-import datetime
+import locale
 import datetime as dt
+from typing import Union
 
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from dateutil.relativedelta import relativedelta
 
 from filters.callback_filters import AdminMenuActions, AdminMenuActionsCD
-
+locale.setlocale(locale.LC_ALL, 'ru_RU.UTF8')
 
 class OpenRange(CallbackData, prefix='range'):
     year: int
@@ -41,142 +42,104 @@ class DatePick(CallbackData, prefix='date_pick'):
 
 class UserDatePicker():
     def __init__(self) -> None:
-        self.next = '▶️'
-        self.previous = '◀️'
-        self.today = datetime.datetime.today()
-        self.year = self.today.year
-        self.month = self.today.month
-        self.day = self.today.day
-        self.date = datetime.datetime(self.year, self.month, self.day)
+        self.next = '▶'
+        self.previous = '◀'
+        self.weeks = calendar.weekheader(width=2)
+        self.year = None
+        self.month = None
+        self.day = None
+        self.date = None
+        self.month_name = None
+        self.back_button = []
 
-    def range_options(self, r_type: str, button: str):
-        add = (self.date + relativedelta(years=1)
-               if r_type == 'year' else self.date + relativedelta(months=1))
-        take = (self.date - relativedelta(years=1)
-                if r_type == 'year' else self.date - relativedelta(months=1))
-
-        month_translations = {
-            'jan': 'янв',
-            'feb': 'фев',
-            'mar': 'мар',
-            'apr': 'апр',
-            'may': 'май',
-            'jun': 'июн',
-            'jul': 'июл',
-            'aug': 'авг',
-            'sep': 'сен',
-            'oct': 'окт',
-            'nov': 'ноя',
-            'dec': 'дек'
-        }
-
+    def range_options(self, r_type: str, button: Union[str, int]):
+        add = self.date + relativedelta(years=1)
+        take = self.date - relativedelta(years=1)
+        if r_type == 'month':
+            add = self.date + relativedelta(months=1)
+            take = self.date - relativedelta(months=1)
         return [
             InlineKeyboardButton(
                 text=f'{self.previous}',
-                callback_data=(
-                    f'{take.year}-{month_translations}'
-                    f'{[take.strftime("%b").lower()]}-{take.day}'
-                    )
-            ),
+                callback_data=DateMove(
+                    year=take.year,
+                    month=take.month,
+                    day=take.day).pack()),
             InlineKeyboardButton(
-                text=button,
-                callback_data=f'{self.year}-{self.month}-{self.day}'
-            ),
+                text=f'{button}',
+                callback_data=OpenRange(
+                    year=self.year,
+                    month=self.month,
+                    day=self.day,
+                    r_type=r_type).pack()),
             InlineKeyboardButton(
                 text=f'{self.next}',
-                callback_data=(
-                    f'{add.year}-'
-                    f'{month_translations[add.strftime("%b").lower()]}-'
-                    f'{add.day}')
-            )
+                callback_data=DateMove(
+                    year=add.year,
+                    month=add.month,
+                    day=add.day).pack()),
         ]
 
     def week_range(self):
         weeks_buttons = []
-        for i in range(7):
-            day = (self.today +
-                   datetime.timedelta(days=(i - self.today.weekday())))
-            text = day.strftime('%a')  # сокращенное название на англ
-            day_name_ru = {
-                'Mon': 'Пн',
-                'Tue': 'Вт',
-                'Wed': 'Ср',
-                'Thu': 'Чт',
-                'Fri': 'Пт',
-                'Sat': 'Сб',
-                'Sun': 'Вс'
-            }
-            text_ru = day_name_ru.get(text)
-
-            callback_data = f"week-{text}"
-            # Создаем InlineKeyboardButton
-            button = (InlineKeyboardButton
-                      (text=text_ru, callback_data=callback_data))
-            weeks_buttons.append(button)
-
+        for week in self.weeks.split():
+            weeks_buttons.append(
+                InlineKeyboardButton(
+                    text=f'{week}',
+                    callback_data=WeekInfo(
+                        week=week).pack())
+            )
         return weeks_buttons
 
     def days_range(self):
         result = []
-        days_data = [
-            [day if day != 0 else '' for day in week]
-            for week in calendar.monthcalendar(self.year, self.month)
-        ]
+        days_data = calendar.monthcalendar(year=self.year, month=self.month)
         for week in days_data:
             weeks_days = []
             for day in week:
-                if day:
-                    day = datetime.datetime(self.year, self.month, day)
-                    text = day.strftime('%a')  # сокр. название на русском
-                    callback_data = f"{self.year}-{self.month}-{day.day}"
-                    weeks_days.append(
-                        InlineKeyboardButton(
-                            text=text,
-                            callback_data=callback_data
-                        )
-                    )
-                else:
-                    weeks_days.append(
-                        InlineKeyboardButton(
-                            text='',
-                            callback_data=''
-                        )
-                    )
+                name = day
+                if day == 0:
+                    name = '󠀠 '
+                weeks_days.append(
+                    InlineKeyboardButton(
+                        text=f'{name}',
+                        callback_data=DatePick(
+                            year=self.year,
+                            month=self.month,
+                            day=day).pack()))
             result.append(weeks_days)
         return result
 
     def __call__(
-         self,
-         year: int = None,
-         month: int = None,
-         day: int = None) -> InlineKeyboardMarkup:
+            self,
+            year: int = None,
+            month: int = None,
+            day: int = None) -> InlineKeyboardMarkup:
         if year is None:
             now = dt.datetime.now()
             year = now.year
             month = now.month
             day = now.day
-            self.date = dt.date(year=year, month=month, day=day)
-            self.year = self.date.year
-            self.month = self.date.month
-            self.day = self.date.day
-            self.month_name = str(dt.date.strftime(self.date, '%B'))
-            self.back_button = [
-             InlineKeyboardButton(
+        self.date = dt.date(year=year, month=month, day=day)
+        self.year = self.date.year
+        self.month = self.date.month
+        self.day = self.date.day
+        self.month_name = str(dt.date.strftime(self.date, '%B'))
+        self.back_button = [
+            InlineKeyboardButton(
                 text=AdminMenuActions.BACK.value,
                 callback_data=AdminMenuActionsCD(
-                    admen_act=AdminMenuActions.BACK
-                ).pack()
-             )
-            ]
-            return InlineKeyboardMarkup(
-                row_width=7,
-                inline_keyboard=[
-                    self.range_options(r_type='year', button=self.year),
-                    self.range_options(r_type='month', button=self.month_name),
-                    self.week_range(),
-                    *self.days_range(),
-                    self.back_button
-                ])
+                    admen_act=AdminMenuActions.BACK).pack())
+        ]
+        return InlineKeyboardMarkup(
+            row_width=7,
+            inline_keyboard=[
+                self.range_options(r_type='year', button=self.year),
+                self.range_options(r_type='month', button=self.month_name),
+                self.week_range(),
+                *self.days_range(),
+                self.back_button
+            ])
 
 
 class Range():
