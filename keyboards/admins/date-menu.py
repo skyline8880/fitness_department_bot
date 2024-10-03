@@ -53,159 +53,97 @@ class UserDatePicker():
         self.day = self.today.day
         self.date = datetime.datetime(self.year, self.month, self.day)
 
-    def range_options(self, r_type: str, button: int):
-        add = self.date + relativedelta(years=1)
-        take = self.date - relativedelta(years=1)
-        if r_type == 'month':
-            add = self.date + relativedelta(months=1)
-            take = self.date - relativedelta(months=1)
+    def range_options(self, r_type: str, button: str):
+        add = self.date + relativedelta(years=1) if r_type == 'year' else self.date + relativedelta(months=1)
+        take = self.date - relativedelta(years=1) if r_type == 'year' else self.date - relativedelta(months=1)
+
+        month_translations = {
+            'jan': 'янв',
+            'feb': 'фев',
+            'mar': 'мар',
+            'apr': 'апр',
+            'may': 'май',
+            'jun': 'июн',
+            'jul': 'июл',
+            'aug': 'авг',
+            'sep': 'сен',
+            'oct': 'окт',
+            'nov': 'ноя',
+            'dec': 'дек'
+        }
+
         return [
             InlineKeyboardButton(
                 text=f'{self.previous}',
-                callback_data=DateMove(
-                    year=take.year,
-                    month=take.month,
-                    day=take.day).pack()),
+                callback_data=f'{take.year}-{month_translations[take.strftime("%b").lower()]}-{take.day}'
+            ),
             InlineKeyboardButton(
-                text=f'{button}',
-                callback_data=OpenRange(
-                    year=self.year,
-                    month=self.month,
-                    day=self.day,
-                    r_type=r_type).pack()),
+                text=button,
+                callback_data=f'{self.year}-{self.month}-{self.day}'
+            ),
             InlineKeyboardButton(
                 text=f'{self.next}',
-                    callback_data=DateMove(
-                        year=add.year,
-                        month=add.month,
-                        day=add.day).pack()),
+                callback_data=f'{add.year}-{month_translations[add.strftime("%b").lower()]}-{add.day}'
+            )
         ]
 
 
-def week_range(self):
-    weeks_buttons = []
-    
-    for weekday in range(7):
-        date = self.today + datetime.timedelta(days=(weekday - self.today.weekday()))
-
-        text = date.strftime("%a")
-        callback_data = WeekInfo(week=text).pack()
-
-        # Создаем InlineKeyboardButton
-        button = InlineKeyboardButton(text=text, callback_data=callback_data)
-
-        # Добавляем созданный объект кнопки в список weeks_buttons
-        weeks_buttons.append(button)
-
-        # Проверка наличия атрибута text у объекта кнопки
-        if hasattr(button, 'text'):
-            print("У объекта есть доступный атрибут 'text'")
-        else:
-            print("У объекта нет доступного атрибута 'text'")
-
-    return weeks_buttons
-"""
     def week_range(self):
         weeks_buttons = []
-        for weekday in range(7):
-            date = self.today + datetime.timedelta(days=(weekday - self.today.weekday()))
-            weeks_buttons.append(
-                InlineKeyboardButton(
-                    text=f'{date.strftime("%a")}',
-                    callback_data=WeekInfo(week=date.strftime("%a")).pack())
-            )
-        return weeks_buttons
-"""
-def days_range(self):
-        result = []
-        days_data = calendar.monthcalendar(year=self.year, month=self.month)
-        for week in days_data:
-            weeks_days = []
-            for day in week:
-                name = day
-                if day == 0:
-                    name = ' '
-                weeks_days.append(
-                    InlineKeyboardButton(
-                        text=f'{name}',
-                        callback_data=DatePick(
-                            year=self.year,
-                            month=self.month,
-                            day=day).pack()))
-            result.append(weeks_days)
-        return result
-"""
-class UserDatePicker():
-    def __init__(self) -> None:
-        self.next = '▶'
-        self.previous = '◀'
-        self.weeks = calendar.weekheader(width=2)
-        self.year = None
-        self.month = None
-        self.day = None
-        self.date = None
-        self.month_name = None
-        self.back_button = []
+        
+        for i in range(7):
+            day = self.today + datetime.timedelta(days=(i - self.today.weekday()))
+            
+            text = day.strftime('%a')  # Получаем сокращенное название дня недели на английском
+            day_name_ru = {
+                'Mon': 'Пн',
+                'Tue': 'Вт',
+                'Wed': 'Ср',
+                'Thu': 'Чт',
+                'Fri': 'Пт',
+                'Sat': 'Сб',
+                'Sun': 'Вс'
+            }
+            text_ru = day_name_ru.get(text)
 
-    def range_options(self, r_type: str, button: Union[str, int]):
-        add = self.date + relativedelta(years=1)
-        take = self.date - relativedelta(years=1)
-        if r_type == 'month':
-            add = self.date + relativedelta(months=1)
-            take = self.date - relativedelta(months=1)
-        return [
-            InlineKeyboardButton(
-                text=f'{self.previous}',
-                callback_data=DateMove(
-                    year=take.year,
-                    month=take.month,
-                    day=take.day).pack()),
-            InlineKeyboardButton(
-                text=f'{button}',
-                callback_data=OpenRange(
-                    year=self.year,
-                    month=self.month,
-                    day=self.day,
-                    r_type=r_type).pack()),
-            InlineKeyboardButton(
-                text=f'{self.next}',
-                callback_data=DateMove(
-                    year=add.year,
-                    month=add.month,
-                    day=add.day).pack()),
-        ]
+            callback_data = f"week-{text}"
+            
+            # Создаем InlineKeyboardButton
+            button = InlineKeyboardButton(text=text_ru, callback_data=callback_data)
+            
+            weeks_buttons.append(button)
 
-    def week_range(self):
-        weeks_buttons = []
-        for week in self.weeks.split():
-            weeks_buttons.append(
-                InlineKeyboardButton(
-                    text=f'{week}',
-                    callback_data=WeekInfo(
-                        week=week).pack())
-            )
         return weeks_buttons
 
     def days_range(self):
         result = []
-        days_data = calendar.monthcalendar(year=self.year, month=self.month)
+        days_data = [
+            [day if day != 0 else '' for day in week]
+            for week in calendar.monthcalendar(self.year, self.month)
+        ]
         for week in days_data:
             weeks_days = []
             for day in week:
-                name = day
-                if day == 0:
-                    name = '󠀠 '
-                weeks_days.append(
-                    InlineKeyboardButton(
-                        text=f'{name}',
-                        callback_data=DatePick(
-                            year=self.year,
-                            month=self.month,
-                            day=day).pack()))
+                if day:
+                    day = datetime.datetime(self.year, self.month, day)
+                    text = day.strftime('%a')  # Получаем сокращенное название дня недели на русском
+                    callback_data = f"{self.year}-{self.month}-{day.day}"
+                    weeks_days.append(
+                        InlineKeyboardButton(
+                            text=text,
+                            callback_data=callback_data
+                        )
+                    )
+                else:
+                    weeks_days.append(
+                        InlineKeyboardButton(
+                            text='',
+                            callback_data=''
+                        )
+                    )
             result.append(weeks_days)
         return result
-"""
-def __call__(
+    def __call__(
             self,
             year: int = None,
             month: int = None,
