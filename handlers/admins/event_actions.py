@@ -265,7 +265,8 @@ async def event_datepick_actions(
         query: CallbackQuery, state: FSMContext) -> None:
     year, month, day = query.data.split(':')[1:]
     try:
-        selected_date = dt.datetime(int(year), int(month), int(day))
+        selected_date = (dt.datetime(int(year),  # noqa: F841
+                                     int(month), int(day)))
     except ValueError:
         await query.answer('Пожалуйста, выберите корректную дату.')
         return

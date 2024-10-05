@@ -3,6 +3,7 @@ extend-ignore =
     E203,
     C901
 exclude =
+    .venv,
     venv,
     .git,
     __pycache__,
@@ -11,4 +12,7 @@ exclude =
     build,
     dist
     test.py
-max-complexity = 10
+    test_correct.py
+    test_day.py
+    test_month.py
+    max-complexity = 10
