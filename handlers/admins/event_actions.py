@@ -243,17 +243,6 @@ async def event_scroll_year_actions(
 async def event_open_range_actions(
         query: CallbackQuery, state: FSMContext) -> None:
     year, month, day, r_type = query.data.split(':')[1:]
-    if year == '0' and month == '0' and day == '0':
-        await query.answer(f'{int(day):02d}.{int(month):02d}.{int(year)}')
-        await bot.edit_message_text(
-            chat_id=query.from_user.id,
-            message_id=query.message.message_id,
-            text=event_choose_r_type(r_type=r_type),
-            reply_markup=DateRange(
-              r_type=r_type,
-              year=int(year),
-              month=int(month),
-              day=int(day)))
 
 
 @router.callback_query(
@@ -264,24 +253,16 @@ async def event_open_range_actions(
 async def event_datepick_actions(
         query: CallbackQuery, state: FSMContext) -> None:
     year, month, day = query.data.split(':')[1:]
-    try:
-        selected_date = (dt.datetime(int(year),  # noqa: F841
-                                     int(month), int(day)))
-    except ValueError:
-        await query.answer('Пожалуйста, выберите корректную дату.')
-        return
-
-    if day != '0':  # Проверяем, что день не равен нулю
-        await query.answer(f'{int(day):02d}.{int(month):02d}.{int(year)}')
-        await bot.edit_message_text(
-            chat_id=query.from_user.id,
-            message_id=query.message.message_id,
-            text=event_choose_hour(),  # Отображаем выбор часа
-            reply_markup=(HourPicker(year=int(year),
-                                     month=int(month), day=int(day)))
-        )
-    else:
-        await query.answer('Выберите дату без нулевого дня.')
+    if day == '0':  # Проверяем, что день равен нулю
+        return await query.answer('Пожалуйста, выберите корректную дату.')
+    # Отвечаем на запрос с сообщением о выборе даты без нулевого дня
+    await query.answer(f'{int(day):02d}.{int(month):02d}.{int(year)}')
+    await bot.edit_message_text(
+       chat_id=query.from_user.id,
+       message_id=query.message.message_id,
+       text=event_choose_hour(),  # Отображаем выбор часа
+       reply_markup=HourPicker(year=int(year), month=int(month), day=int(day))
+    )
 
 
 @router.callback_query(
