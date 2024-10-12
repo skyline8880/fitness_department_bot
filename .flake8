@@ -3,6 +3,7 @@ extend-ignore =
     E203,
     C901
 exclude =
+    .
     .venv,
     venv,
     .git,

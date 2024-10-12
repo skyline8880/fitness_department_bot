@@ -1,5 +1,7 @@
 from psycopg.errors import UniqueViolation
-
+import pandas as pd
+from datetime import datetime
+from utils.reports_util import set_path
 from database.connection.create_connect import DatabaseConnection
 from database.queries.insert import (INSERT_INTO_ENROLL, INSERT_INTO_EVENT,
                                      INSERT_INTO_RECIEVERS,
@@ -15,7 +17,9 @@ from database.queries.select import (SELECT_COMMING_EVENTS,
                                      SELECT_SUBDIVISION_BY_SIGN,
                                      SELECT_SUBDIVISIONS, SELECT_USER_BY_SIGN,
                                      SELECT_USER_DEPARTMENTS_BY_SIGN,
-                                     SELECT_USER_REFERENCES_BY_SIGN)
+                                     SELECT_USER_REFERENCES_BY_SIGN, 
+                                     SELECT_GROUP_EVENTS_DATE, 
+                                     SELECT_SUBSCRIBERS_CLUB)
 from database.queries.update import (UPDATE_ADD_DEPARTMENT_TO_USER,
                                      UPDATE_ADD_SUBDIVISION_TO_USER,
                                      UPDATE_EVENT_SENT, UPDATE_EVENT_STATUS,
@@ -387,3 +391,97 @@ class Database():
                 f'{User.SUBDIV_REFERENCES}': array_type})
         await con.commit()
         await con.close()
+  
+    async def select_subscribers_query(self):
+        con = await self.connection()
+        cur = con.cursor()
+        query = SELECT_SUBSCRIBERS_CLUB
+        await cur.execute(query)
+        rows = await cur.fetchall()
+
+        await con.commit()
+        await con.close()
+        return rows
+
+    async def select_group_events_query(self):
+        con = await self.connection()
+        cur = con.cursor()
+        query = SELECT_GROUP_EVENTS_DATE
+        await cur.execute(query)
+        rows = await cur.fetchall()
+
+        await con.commit()
+        await con.close()
+        return rows
+    
+    def subscribers(self, result):
+        if result is None:
+            print("Ошибка: Нет данных для создания отчета.")
+            return
+
+        columnnames = ['club', 'department', 'fio', 'phone', 'worker']
+        df = pd.DataFrame(result, columns=columnnames)
+
+        if df.empty:
+            print("Пустой DataFrame. Нет данных для отчета.")
+            return
+
+        savedftoexcel = df[['club', 'department', 'fio', 'phone', 'worker']].copy()
+        savedftoexcel.columns = ['Клуб', 'Подразделение', 'ФИО', 'Телефон','Сотрудник']
+
+        filename = f'subscribers_{datetime.now().strftime("%Y-%m-%d")}.xlsx'
+        outputpath = self.set_path(filename)  
+
+        writer = pd.ExcelWriter(outputpath, engine='xlsxwriter')
+
+        savedftoexcel.to_excel(writer, index=False, sheet_name='Подписчики')
+        writer.sheets['Подписчики'].set_column('A:E', 20)
+
+        for departmentname, data in savedftoexcel.groupby('Клуб'):
+            data.to_excel(writer, sheet_name=departmentname, index=False)
+
+        for sheet_name in writer.sheets:
+            writer.sheets[sheet_name].set_column('A:E', 20)
+
+        writer.save()
+        print(f"Отчет успешно создан: {outputpath}")
+
+    def fetchdata(self, result):
+        if not result:
+            print("Ошибка: Нет данных для отчета.")
+            return
+
+        columnnames = ['eventdate', 'eventname', 'club', 'department', 'fio', 'phone', 'active', 'worker']
+        df = pd.DataFrame(result, columns=columnnames)
+
+        df['event_dt'] = pd.to_datetime(df['eventdate']).dt.date
+        df['event_tm'] = pd.to_datetime(df['eventdate']).dt.time
+
+        df = df.drop('eventdate', axis=1)
+
+        savedftoexcel = df[['event_dt', 'event_tm', 'eventname', 'department', 'club', 'fio', 'phone', 'active', 'worker']].copy()
+        savedftoexcel.columns = ['Дата', 'Время', 'Событие', 'Подразделение', 'Клуб', 'ФИО', 'Телефон', 'Активность', 'Сотрудник']
+
+        currentdate = datetime.now().strftime("%Y-%m-%d")
+        filename = f'eventgroup_{currentdate}.xlsx'
+        outputpath = self.setpath(filename)
+
+        writer = pd.ExcelWriter(outputpath, engine='xlsxwriter')
+        savedftoexcel.to_excel(writer, index=False, sheet_name='События по датам')
+
+        workbook = writer.book
+        worksheet = writer.sheets['События по датам']
+
+        for i, column in enumerate(savedftoexcel.columns):
+            columnlen = max(savedftoexcel[column].astype(str).str.len().max(), len(column)) + 5
+            worksheet.set_column(i, i, columnlen)
+
+        for departmentname, data in savedftoexcel.groupby('Клуб'):
+            data.to_excel(writer, sheet_name=departmentname, index=False)
+
+        for sheet_name in writer.sheets:
+            writer.sheets[sheet_name].set_column('A:I', 20)
+
+        writer.save()
+        print(f"Отчет успешно создан: {outputpath}")
+
