@@ -45,9 +45,7 @@ class AdminsActions(Enum):
 class ReportsActions(Enum):
     EVENTS = '📒 Мероприятия'
     USERS = '👥 Пользователи'
-    REPORT1 = 'Отчет №1'
-    REPORT2 = 'Отчет №2'
-
+    
 
 class AdminMenu(Enum):
         
@@ -58,6 +56,6 @@ class AdminMenu(Enum):
 
     
 class DateReports(Enum):
-    CURRENT_DATE = 'Текущиий месяц'
-    PREVIOUS_DATE = 'Предыдущий месяц'
+    CURRENT = 'Текущиий месяц'
+    PREVIOUS = 'Предыдущий месяц'
     PERIOD = 'Выбрать период'
