@@ -1,7 +1,7 @@
 from aiogram.filters.callback_data import CallbackData
 
 from constants.actions import (Action, AdminMenu, AdminMenuActions,
-                               AdminsActions, CurrentEventActions,
+                               AdminsActions, CurrentEventActions, DateReports,
                                EventFreeActions, EventsActions, Menu,
                                ReportsActions)
 
@@ -64,3 +64,8 @@ class AdminMenuActionsCD(CallbackData, prefix='admen_act'):
 class CustomerEventActionsCD(CallbackData, prefix='custom_act'):
     act_id: int
     custom_act: str
+
+
+class DateReportsCD(CallbackData, prefix='date_report'):
+    date_report: DateReports
+    type_report: str
