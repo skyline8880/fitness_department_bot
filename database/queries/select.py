@@ -2,6 +2,7 @@ from core.secrets import DBSecrets
 from database.tables import (Department, Enroll, EnrollAction, Event,
                              Recievers, Subdivision, User)
 
+
 SELECT_DEPARTMENTS = f'''
     SELECT
         {Department.ID},
@@ -169,4 +170,55 @@ SELECT_RECIEVERS_LIST = f'''
     FROM {DBSecrets.SCHEMA_NAME}.{User()}
     WHERE %({User.DEPARTMENT_ID})s = ANY({User.DEPARTMENT_ID})
         AND %({User.SUBDIV_REFERENCES})s = ANY({User.SUBDIV_REFERENCES});
+'''
+SELECT_SUBSCRIBERS_CLUB = f'''
+    SELECT
+        subdiv.{Subdivision.NAME} AS club,
+        dep.{Department.NAME} AS department,
+        CONCAT(
+            usr.{User.LAST_NAME},
+            ' ',
+            usr.{User.FIRST_NAME},
+            ' ',
+            usr.{User.PATRONYMIC}) AS fio,
+        {User.PHONE} AS phone,
+        CASE
+            WHEN {User.ISADMIN} IS not FALSE THEN 'Сотрудник'
+            ELSE ''
+        END AS worker
+    FROM {DBSecrets.SCHEMA_NAME}.{User()} AS usr
+    LEFT JOIN {DBSecrets.SCHEMA_NAME}.{Department()} AS dep
+    ON dep.{Department.ID} = ANY (usr.departments_ids)
+    LEFT JOIN {DBSecrets.SCHEMA_NAME}.{Subdivision()} AS subdiv
+    ON subdiv.{Subdivision.ID} = ANY (usr.Subdivisions_ids)
+    WHERE {User.TELEGRAM_ID} IS NOT NULL;
+'''
+SELECT_GROUP_EVENTS_DATE = f'''
+    SELECT
+        ev.{Event.EVENT_DATE},
+        ev.{Event.NAME} AS event_name,
+        subdiv.{Subdivision.NAME} AS club,
+        dep.{Department.NAME} AS department,
+        CONCAT(
+            usr.{User.LAST_NAME},
+            ' ', usr.{User.FIRST_NAME},
+            ' ', usr.{User.PATRONYMIC}) AS fio,
+        {User.PHONE} AS phone,
+        era.{EnrollAction.NAME} AS active,
+        CASE
+            WHEN {User.ISADMIN} IS not FALSE THEN 'Сотрудник'
+            ELSE ''
+        END AS worker
+    FROM {DBSecrets.SCHEMA_NAME}.{Event()} AS ev
+    LEFT JOIN {DBSecrets.SCHEMA_NAME}.{Enroll()} AS er
+    ON ev.{Event.ID} = er.{Enroll.EVENTID}
+    LEFT JOIN {DBSecrets.SCHEMA_NAME}.{EnrollAction()} AS era
+    ON er.{Enroll.ENROLLACTIONID} = era.{EnrollAction.ID}
+    LEFT JOIN {DBSecrets.SCHEMA_NAME}.{User()} AS usr
+    ON er.{Enroll.CUSTOMER} = usr.{User.TELEGRAM_ID}
+    LEFT JOIN {DBSecrets.SCHEMA_NAME}.{Department()} AS dep
+    ON ev.{Event.DEPARTMENT_ID} = dep.{Department.ID}
+    LEFT JOIN {DBSecrets.SCHEMA_NAME}.{Subdivision()} AS subdiv
+    ON ev.{Event.SUBDIVISION_ID} = subdiv.{Subdivision.ID}
+    WHERE ev.{Event.EVENT_DATE} BETWEEN %(begin)s AND %(end)s;
 '''
