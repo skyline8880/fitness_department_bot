@@ -262,6 +262,8 @@ async def event_open_range_actions(
 async def event_datepick_actions(
         query: CallbackQuery, state: FSMContext) -> None:
     year, month, day = query.data.split(':')[1:]
+    if day == '0':
+        return await query.answer("Выберите день")
     await query.answer(f'{int(day):02d}.{int(month):02d}.{int(year)}')
     await bot.edit_message_text(
         chat_id=query.from_user.id,
