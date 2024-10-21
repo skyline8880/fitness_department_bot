@@ -24,3 +24,9 @@ class AddEventAdmin(StatesGroup):
     name = State()
     description = State()
     isfree = State()
+
+
+class DatePeriod(StatesGroup):
+    start_message = State()
+    action = State()
+    period = State()

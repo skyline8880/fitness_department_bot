@@ -1,5 +1,3 @@
-import datetime as dt
-
 import pandas as pd
 from psycopg.errors import UniqueViolation
 
@@ -407,21 +405,25 @@ class Database():
         await con.close()
         return rows
 
-    async def select_group_events_query(self):
+    async def select_group_events_query(self, begin, end):
         con = await self.connection()
         cur = con.cursor()
         query = SELECT_GROUP_EVENTS_DATE
-        await cur.execute(query)
+        await cur.execute(
+            query=query,
+            params={
+                'begin': str(begin),
+                'end': str(end)
+                })
         rows = await cur.fetchall()
-
         await con.commit()
         await con.close()
         return rows
 
-    def subscribers(self, result):
+    async def subscribers(self, result):
         if result is None:
             print("Ошибка: Нет данных для создания отчета.")
-            return
+            return None, None
 
         columnnames = ['club', 'department', 'fio', 'phone', 'worker']
         df = pd.DataFrame(result, columns=columnnames)
@@ -431,12 +433,11 @@ class Database():
             return
 
         savedftoexcel = df[
-            ['club', 'department', 'fio', 'phone', 'worker']].copy()
+            ['department', 'club', 'fio', 'phone', 'worker']].copy()
         savedftoexcel.columns = [
             'Клуб', 'Подразделение', 'ФИО', 'Телефон', 'Сотрудник']
 
-        filename = (
-            f'subscribers_{dt.datetime.now().strftime("%Y-%m-%d")}.xlsx')
+        filename = 'Пользователи.xlsx'
         outputpath = set_path(filename)
 
         writer = pd.ExcelWriter(outputpath, engine='xlsxwriter')
@@ -450,10 +451,12 @@ class Database():
         for sheet_name in writer.sheets:
             writer.sheets[sheet_name].set_column('A:E', 20)
 
-        writer.save()
-        print(f"Отчет успешно создан: {outputpath}")
+        writer.close()
+        print(f"Отчет скачать здесь {outputpath}")
 
-    def fetchdata(self, result):
+        return outputpath, filename
+
+    async def fetchdata(self, result, begin, end):
         if not result:
             print("Ошибка: Нет данных для отчета.")
             return
@@ -471,11 +474,11 @@ class Database():
             ['event_dt', 'event_tm', 'eventname', 'department',
              'club', 'fio', 'phone', 'active', 'worker']].copy()
         savedftoexcel.columns = [
-            'Дата', 'Время', 'Событие', 'Подразделение', 'Клуб',
+            'Дата', 'Время', 'Событие', 'Клуб', 'Подразделение',
             'ФИО', 'Телефон', 'Активность', 'Сотрудник']
 
-        currentdate = dt.datetime.now().strftime("%Y-%m-%d")
-        filename = f'eventgroup_{currentdate}.xlsx'
+        # Выводим результат
+        filename = f'Мероприятия_{begin}_{end}.xlsx'
         outputpath = set_path(filename)
 
         writer = pd.ExcelWriter(outputpath, engine='xlsxwriter')
@@ -497,5 +500,7 @@ class Database():
         for sheet_name in writer.sheets:
             writer.sheets[sheet_name].set_column('A:I', 20)
 
-        writer.save()
+        writer.close()
         print(f"Отчет успешно создан: {outputpath}")
+
+        return outputpath, filename

@@ -214,10 +214,10 @@ SELECT_GROUP_EVENTS_DATE = f'''
     LEFT JOIN {DBSecrets.SCHEMA_NAME}.{EnrollAction()} AS era
     ON er.{Enroll.ENROLLACTIONID} = era.{EnrollAction.ID}
     LEFT JOIN {DBSecrets.SCHEMA_NAME}.{User()} AS usr
-    ON er.telegram_id = usr.telegram_id
+    ON er.{Enroll.CUSTOMER} = usr.{User.TELEGRAM_ID}
     LEFT JOIN {DBSecrets.SCHEMA_NAME}.{Department()} AS dep
-    ON {Event.DEPARTMENT_ID} = {Department.ID}
+    ON ev.{Event.DEPARTMENT_ID} = dep.{Department.ID}
     LEFT JOIN {DBSecrets.SCHEMA_NAME}.{Subdivision()} AS subdiv
-    ON {Event.SUBDIVISION_ID} = subdiv.{Subdivision.ID}
-    WHERE EXTRACT(MONTH FROM ev.{Event.EVENT_DATE}) = ABS($1);
+    ON ev.{Event.SUBDIVISION_ID} = subdiv.{Subdivision.ID}
+    WHERE ev.{Event.EVENT_DATE} BETWEEN %(begin)s AND %(end)s;
 '''

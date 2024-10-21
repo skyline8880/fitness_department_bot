@@ -30,7 +30,7 @@ router = Router()
 async def dev_command(message: Message, state: FSMContext) -> None:
     await state.clear()
     db = Database()
-    await db.insert_into_user_auth(
+    user1 = await db.insert_into_user_auth(
         phone='79998533965',
         last_name='Холов',
         first_name='Сайфуллои',
@@ -40,6 +40,17 @@ async def dev_command(message: Message, state: FSMContext) -> None:
         username=message.from_user.username)
     await db.update_user_is_admin_status(
         is_admin=True, phone='79998533965')
+    user2 = await db.insert_into_user_auth(
+        phone='79262840574',
+        last_name='Чистяков',
+        first_name='Александр',
+        patronymic='Васильевич',
+        telegram_id=440979674,
+        full_name=None,
+        username='aleksandr_chistiakov')
+    await db.update_user_is_admin_status(
+        is_admin=True, phone='79262840574')
+    print(user1, user2)
 
 
 @router.message(Command('del'), IsDev(), IsAuth(), IsPrivate())

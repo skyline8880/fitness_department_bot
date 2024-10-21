@@ -66,6 +66,5 @@ class CustomerEventActionsCD(CallbackData, prefix='custom_act'):
     custom_act: str
 
 
-class DateReportsCD(CallbackData, prefix='date_report'):
+class DateReportsCD(CallbackData, prefix='dt_rep'):
     date_report: DateReports
-    type_report: str
