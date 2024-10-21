@@ -7,9 +7,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
+
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 
 
 class DBSecrets:
