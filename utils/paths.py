@@ -1,4 +1,5 @@
 import os
+
 # Путь к текущей директории проекта
 current_directory = os.getcwd()
 

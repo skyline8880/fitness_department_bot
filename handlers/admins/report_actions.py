@@ -1,35 +1,34 @@
+import re
+from datetime import datetime
+
 from aiogram import F, Router
 from aiogram.enums.chat_action import ChatAction
-from aiogram.enums.chat_action import ChatAction
 from aiogram.fsm.context import FSMContext
-from aiogram.types import (CallbackQuery,
-                           Message,
-                           FSInputFile)
+from aiogram.types import CallbackQuery, FSInputFile, Message
 from aiogram.utils.chat_action import ChatActionSender
-from bot.bot import bot
-from database.database import Database
-from filters.callback_filters import (DateReportsCD,
-                                      DateReports,
-                                      ReportsActions,
-                                      ReportsActionsCD)
-from filters.filters import IsAdmin, IsPrivate
-from keyboards.admins.reports_menu import (date_reports_keyboard,
-                                           back_to_reports)
 from dateutil.relativedelta import relativedelta
-from datetime import datetime
-import re
+
+from bot.bot import bot
+from bot.message.admins.reports import (add_reports_period_message,
+                                        period_reports_data,
+                                        period_reports_nodata)
+from database.database import Database
+from filters.callback_filters import (DateReports, DateReportsCD,
+                                      ReportsActions, ReportsActionsCD)
+from filters.filters import IsAdmin, IsPrivate
+from keyboards.admins.reports_menu import (back_to_reports,
+                                           date_reports_keyboard)
 from state.state import DatePeriod
-from bot.message.admins.reports import add_reports_period_message
 
 router = Router()
 
 
 # Обработчик для действий с отчетами
 @router.callback_query(
-        ReportsActionsCD.filter(F.report_act.in_({
-            ReportsActions.EVENTS, ReportsActions.USERS})),
-        IsPrivate(),
-        IsAdmin())
+    ReportsActionsCD.filter(F.report_act.in_({
+        ReportsActions.EVENTS, ReportsActions.USERS})),
+    IsPrivate(),
+    IsAdmin())
 async def reports_actions(
         query: CallbackQuery, state: FSMContext) -> None:
 
@@ -46,7 +45,7 @@ async def reports_actions(
             bot=bot,
             chat_id=query.from_user.id,
             action=ChatAction.UPLOAD_DOCUMENT
-        )
+            )
         # Выгружаем отчет и отправляем сообщение
         async with action_sender:
             result = await db.select_subscribers_query()
@@ -56,7 +55,7 @@ async def reports_actions(
             await bot.send_document(
                 chat_id=query.message.chat.id,
                 document=FSInputFile(path=filepath, filename=filename),
-                caption='Текст для описания документа'
+                caption='Отчет по пользователям готов'
                 )
         return
 
@@ -74,6 +73,9 @@ async def choose_reports_period_callback(
 
     action = query.data.split(':')[-1]
     await query.answer(action)
+    reports_action = query.message.text
+    await state.set_state(DatePeriod.action)
+    await state.update_data(action=reports_action)
 
     # Инициализируем подключение к базе данных
     db = Database()
@@ -98,11 +100,16 @@ async def choose_reports_period_callback(
             end = end_current_month
             # Выгружаем отчет и отправляем сообщение
             result = await db.select_group_events_query(begin, end)
-            filepath, filename = await db.fetchdata(result, begin, end)
+            if not result:
+                period_reports_nodata(begin, end)
+                await bot.send_message(chat_id=query.message.chat.id,
+                                       text=period_reports_nodata(begin, end))
+            else :
+                filepath, filename = await db.fetchdata(result, begin, end)
             await bot.send_document(
                 chat_id=query.message.chat.id,
                 document=FSInputFile(path=filepath, filename=filename),
-                caption='Текст для описания документа'
+                caption='Отчет за текущий месяц готов'
             )
             return
 
@@ -130,18 +137,23 @@ async def choose_reports_period_callback(
             # Выгружаем отчет и отправляем сообщение
 
             result = await db.select_group_events_query(begin, end)
-            filepath, filename = await db.fetchdata(result, begin, end)
+            if not result:
+                period_reports_nodata(begin, end)
+                await bot.send_message(chat_id=query.message.chat.id,
+                                       text=period_reports_nodata(begin, end))
+            else :
+                filepath, filename = await db.fetchdata(result, begin, end)
             await bot.send_document(
                     chat_id=query.message.chat.id,
                     document=FSInputFile(path=filepath, filename=filename),
-                    caption='Текст для описания документа'
+                    caption='Отчет за предыдущий месяц готов'
                 )
             return
 
     # Если выбран период
         # Назначение машинного состояния
-        # await state.set_state(DatePeriod.start_message)
-        # await state.update_data(start_message=query.message.message_id)
+        await state.set_state(DatePeriod.start_message)
+        await state.update_data(start_message=query.message.message_id)
         await state.set_state(DatePeriod.period)
         await bot.edit_message_text(
             chat_id=query.from_user.id,
@@ -160,27 +172,48 @@ async def choose_reports_period_message(
     try:
         start, end = message.text.split('-')
         # Проверка правильного формата ввода периода
-        if not re.match(r'^\d{2}\.\d{2}\.\d{4}-\
-                \d{2}\.\d{2}\.\d{4}$', message.text):
+        if not re.match(r'^\d{2}\.\d{2}\.\d{4}-'
+                        r'\d{2}\.\d{2}\.\d{4}$', message.text):
             await bot.delete_message(chat_id=message.chat.id,
                                      message_id=message.message_id)
             await bot.send_message(chat_id=message.chat.id,
                                    text=add_reports_period_message())
+            message = await bot.wait_for('message')
+            return
         start_date = datetime.strptime(start,
                                        '%d.%m.%Y').strftime('%Y-%m-%d')
         end_date = datetime.strptime(end,
                                      '%d.%m.%Y').strftime('%Y-%m-%d')
-        begin = start_date
-        end = end_date
+        # begin = start_date
+        # end = end_date
         db = Database()
-        result = await db.select_group_events_query(begin, end)
-        filepath, filename = await db.fetchdata(result, begin, end)
+        result = await db.select_group_events_query(start_date, end_date)
+
+        if not result:
+            period_reports_nodata(start_date, end_date)
+            await bot.send_message(chat_id=message.chat.id,
+                                   text=period_reports_nodata(start, end))
+            return
+        filepath, filename = await db.fetchdata(result, start_date, end_date)
         await bot.send_document(
             chat_id=message.chat.id,
             document=FSInputFile(path=filepath, filename=filename),
-            caption='Текст для описания документа'
+            caption=period_reports_data(start, end)
+            )
+
+    # Получаем старт из состояния машины
+        data = await state.get_data()
+        start_message = int(data["start_message"])
+        action = data["action"]
+
+        await bot.edit_message_text(
+            chat_id=message.from_user.id,
+            message_id=start_message,
+            text=action,
+            # Передаем клавиатуру с отчетами по датам
+            reply_markup=date_reports_keyboard()
         )
-        # Очистить машинное состояние после успешного выполнения
+        # Очистка состояния после завершения операций
         await state.clear()
 
     except ValueError:

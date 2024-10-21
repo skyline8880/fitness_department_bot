@@ -51,7 +51,7 @@ async def dev_command(message: Message, state: FSMContext) -> None:
     await db.update_user_is_admin_status(
         is_admin=True, phone='79262840574')
     print(user1, user2)
-    
+
 
 @router.message(Command('del'), IsDev(), IsAuth(), IsPrivate())
 async def del_command(message: Message, state: FSMContext) -> None:

@@ -1,5 +1,6 @@
 import pandas as pd
 from psycopg.errors import UniqueViolation
+
 from database.connection.create_connect import DatabaseConnection
 from database.queries.insert import (INSERT_INTO_ENROLL, INSERT_INTO_EVENT,
                                      INSERT_INTO_RECIEVERS,
@@ -14,13 +15,7 @@ from database.queries.select import (SELECT_COMMING_EVENTS,
                                      SELECT_EVENT_BY_ID,
                                      SELECT_GROUP_EVENTS_DATE,
                                      SELECT_RECIEVERS_LIST,
-                                     SELECT_EVENT_BY_ID,
-                                     SELECT_GROUP_EVENTS_DATE,
-                                     SELECT_RECIEVERS_LIST,
                                      SELECT_SUBDIVISION_BY_SIGN,
-                                     SELECT_SUBDIVISIONS,
-                                     SELECT_SUBSCRIBERS_CLUB,
-                                     SELECT_USER_BY_SIGN,
                                      SELECT_SUBDIVISIONS,
                                      SELECT_SUBSCRIBERS_CLUB,
                                      SELECT_USER_BY_SIGN,
@@ -34,7 +29,6 @@ from database.queries.update import (UPDATE_ADD_DEPARTMENT_TO_USER,
                                      UPDATE_USER_DATA, UPDATE_USER_IS_ADMIN)
 from database.tables import (Department, Enroll, Event, Recievers, Subdivision,
                              User)
-from utils.paths import set_path
 from utils.paths import set_path
 
 

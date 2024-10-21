@@ -28,4 +28,5 @@ class AddEventAdmin(StatesGroup):
 
 class DatePeriod(StatesGroup):
     start_message = State()
+    action = State()
     period = State()

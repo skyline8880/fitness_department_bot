@@ -2,7 +2,6 @@ from core.secrets import DBSecrets
 from database.tables import (Department, Enroll, EnrollAction, Event,
                              Recievers, Subdivision, User)
 
-
 SELECT_DEPARTMENTS = f'''
     SELECT
         {Department.ID},

@@ -1,10 +1,9 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from filters.callback_filters import (AdminMenuActions, AdminMenuActionsCD,
+from filters.callback_filters import (AdminMenu, AdminMenuActions,
+                                      AdminMenuActionsCD, AdminMenuCD,
                                       DateReports, DateReportsCD,
-                                      ReportsActions, ReportsActionsCD,
-                                      AdminMenu, AdminMenuCD)
-
+                                      ReportsActions, ReportsActionsCD)
 
 
 def reports_keydoard():
@@ -62,4 +61,3 @@ def back_to_reports():
     ]
     return InlineKeyboardMarkup(
         row_width=2, inline_keyboard=[menu_button])
-    
