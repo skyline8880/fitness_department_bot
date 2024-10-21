@@ -9,7 +9,7 @@ from dateutil.relativedelta import relativedelta
 
 from filters.callback_filters import AdminMenuActions, AdminMenuActionsCD
 
-locale.setlocale(locale.LC_ALL, 'ru_RU.UTF8')
+locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 
 
 class OpenRange(CallbackData, prefix='range'):
