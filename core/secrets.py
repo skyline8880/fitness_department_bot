@@ -1,4 +1,5 @@
 import asyncio
+import locale
 import os
 import sys
 
@@ -8,6 +9,7 @@ load_dotenv()
 
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 
 
 class DBSecrets:
