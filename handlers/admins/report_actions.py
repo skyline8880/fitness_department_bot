@@ -170,10 +170,14 @@ async def choose_reports_period_callback(
 async def choose_reports_period_message(
         message: Message, state: FSMContext) -> None:
     try:
-        start, end = message.text.split('-')
+        # Удаление лишних пробелов вокруг дефиса
+        cleaned_input = re.sub(r'\s*-\s*', '-', message.text)
+        # Разделение ввода на начальную и конечную дату
+        start, end = cleaned_input.split('-')
         # Проверка правильного формата ввода периода
-        if not re.match(r'^\d{2}\.\d{2}\.\d{4}-'
-                        r'\d{2}\.\d{2}\.\d{4}$', message.text):
+        if not re.match(r'^\s*\d{2}\.\d{2}\.\d{4}\s*'
+                        r'-\s*\d{2}\.\d{2}\.\d{4}\s*$', message.text):
+
             await bot.delete_message(chat_id=message.chat.id,
                                      message_id=message.message_id)
             await bot.send_message(chat_id=message.chat.id,
