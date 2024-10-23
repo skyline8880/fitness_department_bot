@@ -478,7 +478,7 @@ class Database():
             'ФИО', 'Телефон', 'Активность', 'Сотрудник']
 
         # Выводим результат
-        filename = f'Мероприятия_{begin}_{end}.xlsx'
+        filename = f'Мероприятия c {begin} по {end}.xlsx'
         outputpath = set_path(filename)
 
         writer = pd.ExcelWriter(outputpath, engine='xlsxwriter')

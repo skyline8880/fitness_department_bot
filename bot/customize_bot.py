@@ -145,9 +145,11 @@ class FitnessDepartmentBot(Bot):
             event_id: int):
         db = Database()
         event = await db.select_event_by_id(event_id=event_id)
+        print(event)
         recievers = await db.select_recievers_list(
             department_id=event[6],
             subdivision_id=event[8])
+        print(recievers)
         msg = 'Нет целевой аудитории'
         kbrd = back_button()
         if recievers != []:
@@ -163,7 +165,6 @@ class FitnessDepartmentBot(Bot):
                         event_id=event_id,
                         customer_id=reciever[0])
                 except Exception as e:
-                    raise Exception
                     print(
                         f'Ошибка рассылки: ID события: {event_id}'
                         f' ID получателя: {reciever[0]}\n'

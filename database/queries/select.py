@@ -219,5 +219,5 @@ SELECT_GROUP_EVENTS_DATE = f'''
     ON ev.{Event.DEPARTMENT_ID} = dep.{Department.ID}
     LEFT JOIN {DBSecrets.SCHEMA_NAME}.{Subdivision()} AS subdiv
     ON ev.{Event.SUBDIVISION_ID} = subdiv.{Subdivision.ID}
-    WHERE ev.{Event.EVENT_DATE} BETWEEN %(begin)s AND %(end)s;
+    WHERE ev.{Event.EVENT_DATE} BETWEEN %(begin)s AND %(end)s::DATE + 1;
 '''
