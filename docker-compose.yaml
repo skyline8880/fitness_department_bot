@@ -6,7 +6,6 @@ services:
     restart: on-failure
     environment:
       - TZ=Europe/Moscow
-      - LLC_ALL=ru_RU.UTF-8
     env_file:
       - .env
     ports:

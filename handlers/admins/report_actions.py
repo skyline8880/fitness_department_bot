@@ -103,12 +103,13 @@ async def choose_reports_period_callback(
             return
         elif action == DateReports.PREVIOUS.value:
             current_date = datetime.now().date()
-            end_previous_month = datetime(
+            first_day_of_month = datetime(
                 year=current_date.year,
                 month=current_date.month,
                 day=1).date()
-            begin_previous_month = (
-                end_previous_month - relativedelta(months=1, days=-1))
+            end_previous_month = first_day_of_month - relativedelta(days=1)
+            begin_previous_month = first_day_of_month - relativedelta(months=1)
+            print(first_day_of_month, begin_previous_month, end_previous_month)
             result = await db.select_group_events_query(
                 begin_previous_month, end_previous_month)
             if not result:
