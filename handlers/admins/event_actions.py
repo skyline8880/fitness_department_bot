@@ -399,7 +399,7 @@ async def get_event_name(message: Message, state: FSMContext) -> None:
 @router.message(AddEventAdmin.description, IsText(), IsAdmin(), IsPrivate())
 async def get_event_description(message: Message, state: FSMContext) -> None:
     await state.update_data(description=message.text)
-    #data = await state.get_data()
+    # data = await state.get_data()
     await state.set_state(AddEventAdmin.isfree)
     await bot.clear_messages(message=message, state=state, finish=False)
     await message.answer(

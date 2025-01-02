@@ -256,7 +256,8 @@ SELECT_EVENTS_TO_SENT_FOR_NEW_USER = f'''
         SELECT
             uev.{Event.ID}
         FROM {DBSecrets.SCHEMA_NAME}.{Recievers()} AS rec
-        RIGHT JOIN unsent_events AS uev ON rec.{Recievers.EVENTID} = uev.{Event.ID}
+        RIGHT JOIN unsent_events AS uev
+            ON rec.{Recievers.EVENTID} = uev.{Event.ID}
         WHERE rec.{Recievers.CUSTOMER} != %({Recievers.CUSTOMER})s)
     SELECT
         ev.{Event.ID},

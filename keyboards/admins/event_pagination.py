@@ -60,15 +60,15 @@ class Paginator():
         # for event_id, name in self.event_list[start:end]:
         for (
             event_id,
-            _,# telegram_id,
-            _,# department_id,
-            _,# subdivision_id,
-            _,# event_date,
+            _,  # telegram_id,
+            _,  # department_id,
+            _,  # subdivision_id,
+            _,  # event_date,
             name,
-            _,# description,
-            _,# is_free,
-            _,# is_active,
-            _,# sent,
+            _,  # description,
+            _,  # is_free,
+            _,  # is_active,
+            _,  # sent,
         ) in self.event_list[start:end]:
             event_list_buttons.append(
                 [

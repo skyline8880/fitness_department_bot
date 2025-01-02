@@ -1,3 +1,4 @@
+from asyncio import sleep
 from typing import Any, Union
 
 from aiogram import Bot
@@ -15,7 +16,6 @@ from database.database import Database
 from keyboards.admins.events_menu import (back_button, current_event_keyboard,
                                           customer_event_keyboard)
 from keyboards.checkbox_menus import department_keydoard
-from asyncio import sleep
 
 
 class FitnessDepartmentBot(Bot):
@@ -212,7 +212,8 @@ class FitnessDepartmentBot(Bot):
 
     async def new_user_newsletter(self, telegram_id: int):
         db = Database()
-        events_to_send = await db.select_new_user_events_to_send(telegram_id=telegram_id)
+        events_to_send = await db.select_new_user_events_to_send(
+            telegram_id=telegram_id)
         print(events_to_send)
         counter = 0
         for event in events_to_send:
