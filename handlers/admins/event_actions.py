@@ -58,11 +58,13 @@ async def events_actions(
         kbrd, msg = await Paginator(event_category='to_send').create_list()
     if kbrd is None:
         return
-    await bot.edit_message_text(
+    await bot.clear_messages(message=query, state=state, finish=False)
+    await query.message.answer(text=msg, reply_markup=kbrd)
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=msg,
-        reply_markup=kbrd)
+        reply_markup=kbrd) """
 
 
 @router.callback_query(
@@ -78,11 +80,13 @@ async def event_list_navigation(
         page=int(page)).create_list()
     if kbrd is None:
         return
-    await bot.edit_message_text(
+    await bot.clear_messages(message=query, state=state, finish=False)
+    await query.message.answer(text=msg, reply_markup=kbrd)
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=msg,
-        reply_markup=kbrd)
+        reply_markup=kbrd) """
 
 
 @router.callback_query(
@@ -98,11 +102,13 @@ async def event_page_range(
         max_pages=int(max_pages)).page_range()
     if kbrd is None:
         return
-    await bot.edit_message_text(
+    await bot.clear_messages(message=query, state=state, finish=False)
+    await query.message.answer(text=events_choose_page(), reply_markup=kbrd)
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=events_choose_page(),
-        reply_markup=kbrd)
+        reply_markup=kbrd) """
 
 
 @router.callback_query(
@@ -118,11 +124,13 @@ async def current_page_choose(
         page=int(page)).create_list()
     if kbrd is None:
         return
-    await bot.edit_message_text(
+    await bot.clear_messages(message=query, state=state, finish=False)
+    await query.message.answer(text=msg, reply_markup=kbrd)
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=msg,
-        reply_markup=kbrd)
+        reply_markup=kbrd) """
 
 
 @router.callback_query(
@@ -135,6 +143,7 @@ async def current_event_choose(
     await query.answer(f'{event_id}')
     await bot.open_event(
         query=query,
+        state=state,
         event_id=int(event_id))
 
 
@@ -149,9 +158,9 @@ async def current_event_actions(
     await query.answer(f'{action}')
     db = Database()
     if action == CurrentEventActions.SEND.value:
-        await bot.newsletter(query=query, event_id=event_id)
+        await bot.newsletter(query=query, state=state, event_id=event_id)
     elif action == CurrentEventActions.STATS.value:
-        await bot.statistics(query=query, event_id=event_id)
+        await bot.statistics(query=query, state=state, event_id=event_id)
     else:
         STATUS = {
             CurrentEventActions.ACTIVATE.value: True,
@@ -159,6 +168,7 @@ async def current_event_actions(
         await db.update_event_status(status=STATUS[action], event_id=event_id)
         await bot.open_event(
             query=query,
+            state=state,
             event_id=int(event_id))
 
 
@@ -170,16 +180,22 @@ async def event_department_choose(
         query: CallbackQuery, state: FSMContext) -> None:
     depart_id = int(query.data.split(':')[-1])
     await query.answer(f'Код клуба: {depart_id}')
+    await state.set_state(AddEventAdmin.start_message)
+    await state.update_data(start_message=query.message.message_id)
     await state.set_state(AddEventAdmin.creator)
     await state.update_data(creator=query.from_user.id)
     await state.set_state(AddEventAdmin.department_id)
     await state.update_data(department_id=depart_id)
-    await state.set_state(AddEventAdmin.event_date)
-    await bot.edit_message_text(
+    await state.set_state(AddEventAdmin.subdivision_id)
+    await bot.clear_messages(message=query, state=state, finish=False)
+    await query.message.answer(
+        text=event_choose_subdivision(),
+        reply_markup=await subdivision_keydoard())
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=event_choose_subdivision(),
-        reply_markup=await subdivision_keydoard())
+        reply_markup=await subdivision_keydoard()) """
 
 
 @router.callback_query(
@@ -192,11 +208,15 @@ async def event_subdivision_choose(
     await query.answer(f'Код подразделения: {subdiv_id}')
     await state.update_data(subdivision_id=subdiv_id)
     await state.set_state(AddEventAdmin.event_date)
-    await bot.edit_message_text(
+    await bot.clear_messages(message=query, state=state, finish=False)
+    await query.message.answer(
+        text=event_choose_date(),
+        reply_markup=DatePicker())
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=event_choose_date(),
-        reply_markup=DatePicker())
+        reply_markup=DatePicker()) """
 
 
 @router.callback_query(
@@ -207,14 +227,21 @@ async def event_date_move_actions(
         query: CallbackQuery, state: FSMContext) -> None:
     year, month, day = query.data.split(':')[1:]
     await query.answer(f'{int(day):02d}.{int(month):02d}.{int(year)}')
-    await bot.edit_message_text(
+    await bot.clear_messages(message=query, state=state, finish=False)
+    await query.message.answer(
+        text=event_choose_date(),
+        reply_markup=DatePicker(
+            year=int(year),
+            month=int(month),
+            day=int(day)))
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=event_choose_date(),
         reply_markup=DatePicker(
             year=int(year),
             month=int(month),
-            day=int(day)))
+            day=int(day))) """
 
 
 @router.callback_query(
@@ -225,7 +252,15 @@ async def event_scroll_year_actions(
         query: CallbackQuery, state: FSMContext) -> None:
     year, month, day, r_type = query.data.split(':')[1:]
     await query.answer(f'{int(day):02d}.{int(month):02d}.{int(year)}')
-    await bot.edit_message_text(
+    await bot.clear_messages(message=query, state=state, finish=False)
+    await query.message.answer(
+        text=event_choose_r_type(r_type=r_type),
+        reply_markup=DateRange(
+            r_type=r_type,
+            year=int(year),
+            month=int(month),
+            day=int(day)))
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=event_choose_r_type(r_type=r_type),
@@ -233,7 +268,7 @@ async def event_scroll_year_actions(
             r_type=r_type,
             year=int(year),
             month=int(month),
-            day=int(day)))
+            day=int(day))) """
 
 
 @router.callback_query(
@@ -244,7 +279,15 @@ async def event_open_range_actions(
         query: CallbackQuery, state: FSMContext) -> None:
     year, month, day, r_type = query.data.split(':')[1:]
     await query.answer(f'{int(day):02d}.{int(month):02d}.{int(year)}')
-    await bot.edit_message_text(
+    await bot.clear_messages(message=query, state=state, finish=False)
+    await query.message.answer(
+        text=event_choose_r_type(r_type=r_type),
+        reply_markup=DateRange(
+            r_type=r_type,
+            year=int(year),
+            month=int(month),
+            day=int(day)))
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=event_choose_r_type(r_type=r_type),
@@ -252,7 +295,7 @@ async def event_open_range_actions(
             r_type=r_type,
             year=int(year),
             month=int(month),
-            day=int(day)))
+            day=int(day))) """
 
 
 @router.callback_query(
@@ -265,14 +308,21 @@ async def event_datepick_actions(
     if day == '0':
         return await query.answer("Выберите день")
     await query.answer(f'{int(day):02d}.{int(month):02d}.{int(year)}')
-    await bot.edit_message_text(
+    await bot.clear_messages(message=query, state=state, finish=False)
+    await query.message.answer(
+        text=event_choose_hour(),
+        reply_markup=HourPicker(
+            year=int(year),
+            month=int(month),
+            day=int(day)))
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=event_choose_hour(),
         reply_markup=HourPicker(
             year=int(year),
             month=int(month),
-            day=int(day)))
+            day=int(day))) """
 
 
 @router.callback_query(
@@ -283,7 +333,15 @@ async def event_timehour_actions(
         query: CallbackQuery, state: FSMContext) -> None:
     year, month, day, hour = query.data.split(':')[1:]
     await query.answer(f'{int(hour):02d}')
-    await bot.edit_message_text(
+    await bot.clear_messages(message=query, state=state, finish=False)
+    await query.message.answer(
+        text=event_choose_minute(),
+        reply_markup=MinutePicker(
+            year=int(year),
+            month=int(month),
+            day=int(day),
+            hour=int(hour)))
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=event_choose_minute(),
@@ -291,7 +349,7 @@ async def event_timehour_actions(
             year=int(year),
             month=int(month),
             day=int(day),
-            hour=int(hour)))
+            hour=int(hour))) """
 
 
 @router.callback_query(
@@ -309,39 +367,49 @@ async def event_timeminute_actions(
         minute=int(minute),
         second=0)
     await state.update_data(event_date=date)
-    await state.update_data(start_message=query.message.message_id)
+    # await state.update_data(start_message=query.message.message_id)
     await state.set_state(AddEventAdmin.name)
-    await bot.edit_message_text(
+    await bot.clear_messages(message=query, state=state, finish=False)
+    await query.message.answer(
+        text=event_choose_name(),
+        reply_markup=back_button())
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=event_choose_name(),
-        reply_markup=back_button())
+        reply_markup=back_button()) """
 
 
 @router.message(AddEventAdmin.name, IsText(), IsAdmin(), IsPrivate())
 async def get_event_name(message: Message, state: FSMContext) -> None:
     await state.update_data(name=message.text)
-    data = await state.get_data()
+    # data = await state.get_data()
     await state.set_state(AddEventAdmin.description)
-    await message.delete()
-    await bot.edit_message_text(
+    await bot.clear_messages(message=message, state=state, finish=False)
+    await message.answer(
+        text=event_choose_description(),
+        reply_markup=back_button())
+    """ await bot.edit_message_text(
         chat_id=message.from_user.id,
         message_id=int(data['start_message']),
         text=event_choose_description(),
-        reply_markup=back_button())
+        reply_markup=back_button()) """
 
 
 @router.message(AddEventAdmin.description, IsText(), IsAdmin(), IsPrivate())
 async def get_event_description(message: Message, state: FSMContext) -> None:
     await state.update_data(description=message.text)
-    data = await state.get_data()
+    #data = await state.get_data()
     await state.set_state(AddEventAdmin.isfree)
-    await message.delete()
-    await bot.edit_message_text(
+    await bot.clear_messages(message=message, state=state, finish=False)
+    await message.answer(
+        text=event_choose_is_free(),
+        reply_markup=free_type_keyboard())
+    """ await bot.edit_message_text(
         chat_id=message.from_user.id,
         message_id=int(data['start_message']),
         text=event_choose_is_free(),
-        reply_markup=free_type_keyboard())
+        reply_markup=free_type_keyboard()) """
 
 
 @router.message(
@@ -350,7 +418,7 @@ async def get_event_description(message: Message, state: FSMContext) -> None:
 async def get_wrong_name_or_description(
         message: Message, state: FSMContext) -> None:
     m_id = message.message_id + 1
-    await message.delete()
+    await bot.clear_messages(message=message, state=state, finish=False)
     await message.answer(text=wrong_text_format())
     await sleep(5)
     try:
@@ -370,8 +438,7 @@ async def event_payment_actions(
     code, name = query.data.split(':')[1:]
     await query.answer(name)
     await state.update_data(isfree=int(code))
-    data = await state.get_data()
-    await bot.create_event(query=query, data=data)
+    await bot.create_event(query=query, state=state)
 
 
 @router.callback_query(

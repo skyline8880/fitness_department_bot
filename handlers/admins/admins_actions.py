@@ -37,11 +37,16 @@ async def admins_actions(
     await state.update_data(action=action)
     await state.update_data(start_message=query.message.message_id)
     await state.set_state(AddRemoveAdmin.phone_number)
-    await bot.edit_message_text(
+    await query.message.delete()
+    await query.message.answer(
+        text=add_remove_admin_message(action=action),
+        reply_markup=back_to_admins()
+    )
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=add_remove_admin_message(action=action),
-        reply_markup=back_to_admins())
+        reply_markup=back_to_admins()) """
 
 
 @router.message(
@@ -67,11 +72,18 @@ async def get_admins_phone(message: Message, state: FSMContext) -> None:
                 msg = exist_admin_result_message(phone=phone)
         if is_allowed:
             await db.insert_into_user_admin(phone=phone, status=True)
-            return await bot.edit_message_text(
+            await bot.clear_messages(
+                message=message, state=state, finish=True)
+            await message.answer(text=msg)
+            return await message.answer(
+                text=action_message(action=AdminMenu.ADMINS.value),
+                reply_markup=admins_keydoard()
+            )
+            """ return await bot.edit_message_text(
                 chat_id=message.from_user.id,
                 message_id=int(data['start_message']),
                 text=msg,
-                reply_markup=back_to_admins())
+                reply_markup=back_to_admins()) """
         await message.answer(text=msg)
         await sleep(5)
         try:
@@ -92,11 +104,18 @@ async def get_admins_phone(message: Message, state: FSMContext) -> None:
             msg = not_exist_admin_result_message(phone=phone)
     if is_allowed:
         await db.update_user_is_admin_status(phone=phone, is_admin=False)
-        return await bot.edit_message_text(
+        await bot.clear_messages(
+            message=message, state=state, finish=True)
+        await message.answer(text=msg)
+        return await message.answer(
+            text=action_message(action=AdminMenu.ADMINS.value),
+            reply_markup=admins_keydoard()
+        )
+        """ return await bot.edit_message_text(
             chat_id=message.from_user.id,
             message_id=int(data['start_message']),
             text=msg,
-            reply_markup=back_to_admins())
+            reply_markup=back_to_admins()) """
     await message.answer(text=msg)
     await sleep(5)
     try:
@@ -134,8 +153,13 @@ async def get_wrong_admins_phone(message: Message, state: FSMContext) -> None:
 async def to_menu_action(
         query: CallbackQuery, state: FSMContext) -> None:
     await state.clear()
-    await bot.edit_message_text(
+    await query.message.delete()
+    await query.message.answer(
+        text=action_message(action=AdminMenu.ADMINS.value),
+        reply_markup=admins_keydoard()
+    )
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=action_message(action=AdminMenu.ADMINS.value),
-        reply_markup=admins_keydoard())
+        reply_markup=admins_keydoard()) """

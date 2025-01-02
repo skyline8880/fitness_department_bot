@@ -1,7 +1,7 @@
 from aiogram.utils import markdown
 
 
-def welcome_after_auth_choose_department_message(first_name):
+def welcome_message(first_name):
     return markdown.text(
         markdown.text(
             markdown.markdown_decoration.quote('Добро пожаловать,'),
@@ -21,6 +21,13 @@ def welcome_after_auth_choose_department_message(first_name):
         markdown.markdown_decoration.quote('мероприятиях клуба.\n'),
         markdown.markdown_decoration.quote('Далее перейдите к выбору'),
         markdown.markdown_decoration.quote('подразделений.'),
+        sep='\n')
+
+
+def welcome_after_auth_choose_department_message():
+    return markdown.text(
+        markdown.markdown_decoration.quote('Перейдите к выбору'),
+        markdown.markdown_decoration.quote('клуба.'),
         sep='\n')
 
 

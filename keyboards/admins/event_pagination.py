@@ -38,8 +38,10 @@ class Paginator():
     async def create_list(self):
         db = Database()
         METHODS = {
-            'comming': [db.select_comming_events, comming_events_list],
-            'to_send': [db.select_comming_events_to_send, events_to_send_list],
+            'comming': [
+                db.select_comming_events, comming_events_list],
+            'to_send': [
+                db.select_comming_events_by_sent_status, events_to_send_list],
         }
         self.event_list = await METHODS[self.event_category][0]()
         if self.event_list == []:
@@ -55,7 +57,19 @@ class Paginator():
         if self.max_pages is None:
             self.max_pages = page_count
         event_list_buttons = []
-        for event_id, name in self.event_list[start:end]:
+        # for event_id, name in self.event_list[start:end]:
+        for (
+            event_id,
+            _,# telegram_id,
+            _,# department_id,
+            _,# subdivision_id,
+            _,# event_date,
+            name,
+            _,# description,
+            _,# is_free,
+            _,# is_active,
+            _,# sent,
+        ) in self.event_list[start:end]:
             event_list_buttons.append(
                 [
                     InlineKeyboardButton(

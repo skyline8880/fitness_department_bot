@@ -31,11 +31,16 @@ async def admin_menu_actions(
         kbrd = events_keydoard
     elif action == AdminMenu.REPORTS.value:
         kbrd = reports_keydoard
-    await bot.edit_message_text(
+    await query.message.delete()
+    await query.message.answer(
+        text=action_message(action=action),
+        reply_markup=kbrd()
+    )
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=action_message(action=action),
-        reply_markup=kbrd())
+        reply_markup=kbrd()) """
 
 
 @router.callback_query(
@@ -49,13 +54,20 @@ async def to_menu_action(
     await state.clear()
     db = Database()
     user_data = await db.select_user_by_sign(sign=query.from_user.id)
-    await bot.edit_message_text(
+    await bot.clear_messages(message=query, state=state, finish=False)
+    await query.message.answer(
+        text=admin_menu_message(
+            first_name=user_data[4],
+            phone=user_data[2]),
+        reply_markup=admin_keydoard()
+    )
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=admin_menu_message(
             first_name=user_data[4],
             phone=user_data[2]),
-        reply_markup=admin_keydoard())
+        reply_markup=admin_keydoard()) """
 
 
 @router.callback_query(
@@ -66,9 +78,13 @@ async def back_action(
         query: CallbackQuery, state: FSMContext) -> None:
     action = query.data.split(':')[-1]
     await query.answer(action)
-    await state.clear()
-    await bot.edit_message_text(
+    await bot.clear_messages(message=query, state=state, finish=True)
+    await query.message.answer(
+        text=action_message(action=action),
+        reply_markup=events_keydoard()
+    )
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=action_message(action=action),
-        reply_markup=events_keydoard())
+        reply_markup=events_keydoard()) """

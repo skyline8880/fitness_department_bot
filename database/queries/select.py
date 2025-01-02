@@ -112,20 +112,36 @@ SELECT_EVENT_BY_ID = f'''
 SELECT_COMMING_EVENTS = f'''
     SELECT
         {Event.ID},
-        {Event.NAME}
+        {Event.CREATOR},
+        {Event.DEPARTMENT_ID},
+        {Event.SUBDIVISION_ID},
+        {Event.EVENT_DATE},
+        {Event.NAME},
+        {Event.DESCRIPTION},
+        {Event.ISFREE},
+        {Event.ISACTIVE},
+        {Event.SENT}
     FROM {DBSecrets.SCHEMA_NAME}.{Event()}
     WHERE {Event.EVENT_DATE} > CURRENT_TIMESTAMP
     AND {Event.ISACTIVE} = TRUE
     ORDER BY {Event.EVENT_DATE};
 '''
-SELECT_COMMING_EVENTS_TO_SEND = f'''
+SELECT_COMMING_EVENTS_BY_SENT_STATUS = f'''
     SELECT
         {Event.ID},
-        {Event.NAME}
+        {Event.CREATOR},
+        {Event.DEPARTMENT_ID},
+        {Event.SUBDIVISION_ID},
+        {Event.EVENT_DATE},
+        {Event.NAME},
+        {Event.DESCRIPTION},
+        {Event.ISFREE},
+        {Event.ISACTIVE},
+        {Event.SENT}
     FROM {DBSecrets.SCHEMA_NAME}.{Event()}
     WHERE {Event.EVENT_DATE} > CURRENT_TIMESTAMP
     AND {Event.ISACTIVE} = TRUE
-    AND {Event.SENT} != TRUE
+    AND {Event.SENT} = %({Event.SENT})s
     ORDER BY {Event.EVENT_DATE};
 '''
 SELECT_ENROLL_LIST = f'''
@@ -140,14 +156,14 @@ SELECT_ENROLL_LIST = f'''
         ON era.{EnrollAction.ID} = er.{Enroll.ENROLLACTIONID}
     WHERE er.{Enroll.EVENTID} = %({Enroll.EVENTID})s;
 '''
-SELECT_RECIEVERS_LIST = f'''
+SELECT_EVENT_RECIEVERS_LIST = f'''
     SELECT
         CONCAT(usr.{User.LAST_NAME}, ' ', usr.{User.FIRST_NAME}),
         usr.{User.PHONE}
     FROM {DBSecrets.SCHEMA_NAME}.{Recievers()} AS rec
     LEFT JOIN {DBSecrets.SCHEMA_NAME}.{User()} AS usr
         ON rec.{Recievers.CUSTOMER} = usr.{User.TELEGRAM_ID}
-    WHERE er.{Recievers.EVENTID} = %({Recievers.EVENTID})s;
+    WHERE rec.{Recievers.EVENTID} = %({Recievers.EVENTID})s;
 '''
 SELECT_CURRENT_CUSTOMER_ENROLL = f'''
     SELECT
@@ -163,7 +179,13 @@ SELECT_CUSTOMER_ENROLL_ACTIONS = f'''
     FROM {DBSecrets.SCHEMA_NAME}.{EnrollAction()}
     ORDER BY {EnrollAction.ID};
 '''
-SELECT_RECIEVERS_LIST = f'''
+SELECT_RECIEVERS_BY_EVENT_ID = f'''
+    SELECT
+        {Recievers.EVENTID}
+    FROM {DBSecrets.SCHEMA_NAME}.{Recievers()}
+    WHERE {Recievers.EVENTID} = %({Recievers.EVENTID})s;
+'''
+SELECT_DEP_SUB_RECIEVERS_ID_LIST = f'''
     SELECT
         {User.TELEGRAM_ID}
     FROM {DBSecrets.SCHEMA_NAME}.{User()}
@@ -220,4 +242,53 @@ SELECT_GROUP_EVENTS_DATE = f'''
     LEFT JOIN {DBSecrets.SCHEMA_NAME}.{Subdivision()} AS subdiv
     ON ev.{Event.SUBDIVISION_ID} = subdiv.{Subdivision.ID}
     WHERE ev.{Event.EVENT_DATE} BETWEEN %(begin)s AND %(end)s::DATE + 1;
+'''
+SELECT_EVENTS_TO_SENT_FOR_NEW_USER = f'''
+    WITH not_recieved_events AS (
+        WITH unsent_events AS (
+                SELECT
+                    {Event.ID}
+                FROM {DBSecrets.SCHEMA_NAME}.{Event()}
+                WHERE {Event.EVENT_DATE} > CURRENT_TIMESTAMP
+                AND {Event.ISACTIVE} = TRUE
+                AND {Event.SENT} = TRUE
+                ORDER BY {Event.EVENT_DATE})
+        SELECT
+            uev.{Event.ID}
+        FROM {DBSecrets.SCHEMA_NAME}.{Recievers()} AS rec
+        RIGHT JOIN unsent_events AS uev ON rec.{Recievers.EVENTID} = uev.{Event.ID}
+        WHERE rec.{Recievers.CUSTOMER} != %({Recievers.CUSTOMER})s)
+    SELECT
+        ev.{Event.ID},
+        ev.{Event.EVENT_DATE},
+        usr.{User.TELEGRAM_ID},
+        usr.{User.LAST_NAME},
+        usr.{User.FIRST_NAME},
+        usr.{User.PHONE},
+        dep.{Department.ID},
+        dep.{Department.NAME},
+        subdiv.{Subdivision.ID},
+        subdiv.{Subdivision.NAME},
+        ev.{Event.NAME},
+        ev.{Event.DESCRIPTION},
+        ev.{Event.ISFREE},
+        ev.{Event.ISACTIVE},
+        ev.{Event.SENT}
+    FROM {DBSecrets.SCHEMA_NAME}.{Event()} AS ev
+    INNER JOIN not_recieved_events AS nre
+        ON ev.{Event.ID} = nre.{Event.ID}
+    LEFT JOIN {DBSecrets.SCHEMA_NAME}.{User()} AS usr
+        ON ev.{Event.CREATOR} = usr.{User.TELEGRAM_ID}
+    LEFT JOIN {DBSecrets.SCHEMA_NAME}.{Department()} AS dep
+        ON ev.{Event.DEPARTMENT_ID} = dep.{Department.ID}
+    LEFT JOIN {DBSecrets.SCHEMA_NAME}.{Subdivision()} AS subdiv
+        ON ev.{Event.SUBDIVISION_ID} = subdiv.{Subdivision.ID}
+'''
+CHECK_USERS_DEP_AND_SUBDIV = f'''
+    SELECT
+        {User.TELEGRAM_ID}
+    FROM {DBSecrets.SCHEMA_NAME}.{User()}
+    WHERE %({User.DEPARTMENT_ID})s = ANY({User.DEPARTMENT_ID})
+        AND %({User.SUBDIV_REFERENCES})s = ANY({User.SUBDIV_REFERENCES})
+        AND {User.TELEGRAM_ID} = %({User.TELEGRAM_ID})s;
 '''

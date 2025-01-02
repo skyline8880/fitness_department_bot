@@ -7,20 +7,23 @@ from database.queries.insert import (INSERT_INTO_ENROLL, INSERT_INTO_EVENT,
                                      INSERT_INTO_USER_AUTH,
                                      INSERT_INTO_USER_HIRE)
 from database.queries.select import (SELECT_COMMING_EVENTS,
-                                     SELECT_COMMING_EVENTS_TO_SEND,
+                                     SELECT_COMMING_EVENTS_BY_SENT_STATUS,
                                      SELECT_CURRENT_CUSTOMER_ENROLL,
                                      SELECT_CUSTOMER_ENROLL_ACTIONS,
                                      SELECT_DEPARTMENT_BY_SIGN,
                                      SELECT_DEPARTMENTS, SELECT_ENROLL_LIST,
                                      SELECT_EVENT_BY_ID,
                                      SELECT_GROUP_EVENTS_DATE,
-                                     SELECT_RECIEVERS_LIST,
+                                     SELECT_EVENT_RECIEVERS_LIST,
+                                     SELECT_EVENTS_TO_SENT_FOR_NEW_USER,
+                                     SELECT_DEP_SUB_RECIEVERS_ID_LIST,
                                      SELECT_SUBDIVISION_BY_SIGN,
                                      SELECT_SUBDIVISIONS,
                                      SELECT_SUBSCRIBERS_CLUB,
                                      SELECT_USER_BY_SIGN,
                                      SELECT_USER_DEPARTMENTS_BY_SIGN,
-                                     SELECT_USER_REFERENCES_BY_SIGN)
+                                     SELECT_USER_REFERENCES_BY_SIGN,
+                                     CHECK_USERS_DEP_AND_SUBDIV)
 from database.queries.update import (UPDATE_ADD_DEPARTMENT_TO_USER,
                                      UPDATE_ADD_SUBDIVISION_TO_USER,
                                      UPDATE_EVENT_SENT, UPDATE_EVENT_STATUS,
@@ -107,16 +110,16 @@ class Database():
         finally:
             await con.commit()
             await con.close()
-            print(user)
             return user
 
     async def insert_event(self, data):
+        print(data)
         (
+            _,
             creator,
             department_id,
             subdivision_id,
             event_date,
-            _,
             name,
             description,
             isfree
@@ -264,11 +267,24 @@ class Database():
         await con.close()
         return result
 
-    async def select_comming_events_to_send(self):
+    async def select_comming_events_by_sent_status(
+            self, was_sent: bool = False):
         con = await self.connection()
         cur = con.cursor()
         await cur.execute(
-            query=SELECT_COMMING_EVENTS_TO_SEND)
+            query=SELECT_COMMING_EVENTS_BY_SENT_STATUS,
+            params={f'{Event.SENT}': was_sent})
+        result = await cur.fetchall()
+        await con.close()
+        return result
+
+    async def select_new_user_events_to_send(
+            self, telegram_id: int) -> list:
+        con = await self.connection()
+        cur = con.cursor()
+        await cur.execute(
+            query=SELECT_EVENTS_TO_SENT_FOR_NEW_USER,
+            params={f'{Recievers.CUSTOMER}': telegram_id})
         result = await cur.fetchall()
         await con.close()
         return result
@@ -288,9 +304,26 @@ class Database():
         con = await self.connection()
         cur = con.cursor()
         await cur.execute(
-            query=SELECT_RECIEVERS_LIST,
+            query=SELECT_EVENT_RECIEVERS_LIST,
             params={f'{Enroll.EVENTID}': event_id})
         result = await cur.fetchall()
+        await con.close()
+        return result
+
+    async def check_users_dep_and_subdiv(
+            self, department_id, subdivision_id, telegram_id):
+        con = await self.connection()
+        cur = con.cursor()
+        await cur.execute(
+            query=CHECK_USERS_DEP_AND_SUBDIV,
+            params={
+                f'{User.DEPARTMENT_ID}': department_id,
+                f'{User.SUBDIV_REFERENCES}': subdivision_id,
+                f'{User.TELEGRAM_ID}': telegram_id,
+
+            }
+        )
+        result = await cur.fetchone()
         await con.close()
         return result
 
@@ -319,7 +352,7 @@ class Database():
         con = await self.connection()
         cur = con.cursor()
         await cur.execute(
-            query=SELECT_RECIEVERS_LIST,
+            query=SELECT_DEP_SUB_RECIEVERS_ID_LIST,
             params={
                 f'{User.DEPARTMENT_ID}': department_id,
                 f'{User.SUBDIV_REFERENCES}': subdivision_id})

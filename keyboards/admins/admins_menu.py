@@ -3,6 +3,13 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from filters.callback_filters import (AdminMenuActions, AdminMenuActionsCD,
                                       AdminsActions, AdminsActionsCD)
 
+menu_button = [
+    InlineKeyboardButton(
+        text=AdminMenuActions.TOMENU.value,
+        callback_data=AdminMenuActionsCD(
+            admen_act=AdminMenuActions.TOMENU).pack())
+]
+
 
 def admins_keydoard():
     buttons = []
@@ -13,12 +20,6 @@ def admins_keydoard():
                 callback_data=AdminsActionsCD(
                     adm_act=butt).pack())
         )
-    menu_button = [
-        InlineKeyboardButton(
-            text=AdminMenuActions.TOMENU.value,
-            callback_data=AdminMenuActionsCD(
-                admen_act=AdminMenuActions.TOMENU).pack())
-    ]
     return InlineKeyboardMarkup(
         row_width=2, inline_keyboard=[buttons, menu_button])
 

@@ -40,7 +40,35 @@ async def to_menu_action(query: CallbackQuery) -> None:
     await query.answer(action)
     db = Database()
     user_data = await db.select_user_by_sign(sign=query.from_user.id)
-    await bot.edit_message_text(
+    await query.message.delete()
+    await query.message.answer(
+        text=user_menu_message(
+            last_name=user_data[3],
+            first_name=user_data[4],
+            clubs=[
+                club
+                for
+                _,
+                club,
+                status
+                in await db.select_user_departments_by_sign(
+                    telegram_id=query.from_user.id)
+                if status is not None
+            ],
+            subdivs=[
+                subdiv
+                for
+                _,
+                subdiv,
+                status
+                in await db.select_user_references_by_sign(
+                    telegram_id=query.from_user.id)
+                if status is not None
+            ]
+        ),
+        reply_markup=menu_keyboard()
+    )
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=user_menu_message(
@@ -67,7 +95,7 @@ async def to_menu_action(query: CallbackQuery) -> None:
                 if status is not None
             ]
         ),
-        reply_markup=menu_keyboard())
+        reply_markup=menu_keyboard()) """
 
 
 @router.callback_query(
@@ -82,12 +110,18 @@ async def menu_buttons_choose(query: CallbackQuery) -> None:
     if action == Menu.SUBDIV.value:
         method = subdivision_keydoard
         msg = user_choose_subdiv_message()
-    await bot.edit_message_text(
+    await query.message.delete()
+    await query.message.answer(
+        text=msg,
+        reply_markup=await method(
+            telegram_id=query.from_user.id, welcome=[Action.TOMENU])
+    )
+    """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=msg,
         reply_markup=await method(
-            telegram_id=query.from_user.id, welcome=[Action.TOMENU]))
+            telegram_id=query.from_user.id, welcome=[Action.TOMENU])) """
 
 
 @router.callback_query(
@@ -102,18 +136,21 @@ async def choose_department(query: CallbackQuery) -> None:
     if int(status) == 0:
         is_add = True
         msg = 'Добавлен клуб'
+        await bot.new_user_newsletter(telegram_id=query.from_user.id)
     await query.answer(msg)
     await db.update_add_remove_users_department(
         depatment_id=int(dep_id),
         telegram_id=query.from_user.id,
         is_add=is_add)
     additional_button = [Action.TOMENU]
-    if 'Добро пожаловать' in query.message.text:
+    if 'Перейдите к выбору' in query.message.text:
         additional_button = [Action.TOSUBDIVS]
     await query.message.edit_reply_markup(
         reply_markup=await department_keydoard(
-            query.from_user.id,
+            telegram_id=query.from_user.id,
             welcome=additional_button))
+    if is_add:
+        await bot.new_user_newsletter(telegram_id=query.from_user.id)
 
 
 @router.callback_query(
@@ -137,3 +174,5 @@ async def choose_subdivision(query: CallbackQuery) -> None:
         reply_markup=await subdivision_keydoard(
             query.from_user.id,
             welcome=[Action.TOMENU]))
+    if is_add:
+        await bot.new_user_newsletter(telegram_id=query.from_user.id)

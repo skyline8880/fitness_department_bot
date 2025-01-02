@@ -8,12 +8,14 @@ from aiogram.types import BotCommand, CallbackQuery, Message
 
 from bot.message.admins.events import (  # customers_recievers_message,
     customer_event_data_message, customers_enroll_message, event_data_message)
-from bot.message.welcome import welcome_after_auth_choose_department_message
+from bot.message.welcome import (welcome_after_auth_choose_department_message,
+                                 welcome_message)
 from constants.actions import Action
 from database.database import Database
 from keyboards.admins.events_menu import (back_button, current_event_keyboard,
                                           customer_event_keyboard)
 from keyboards.checkbox_menus import department_keydoard
+from asyncio import sleep
 
 
 class FitnessDepartmentBot(Bot):
@@ -96,8 +98,9 @@ class FitnessDepartmentBot(Bot):
             return
         await self.clear_messages(message=message, state=state, finish=True)
         await message_object.answer(
-            text=welcome_after_auth_choose_department_message(
-                first_name=user_data_from_db[4]),
+            text=welcome_message(first_name=user_data_from_db[4]))
+        await message_object.answer(
+            text=welcome_after_auth_choose_department_message(),
             reply_markup=await department_keydoard(
                 telegram_id=user_data_from_db[0],
                 welcome=[Action.TOSUBDIVS]))
@@ -105,7 +108,8 @@ class FitnessDepartmentBot(Bot):
     async def create_event(
             self,
             query: CallbackQuery,
-            data: dict):
+            state: FSMContext):
+        data = await state.get_data()
         db = Database()
         add_success = await db.insert_event(data=data)
         if not add_success:
@@ -115,15 +119,20 @@ class FitnessDepartmentBot(Bot):
             event_data = await db.select_event_by_id(event_id=add_success[0])
             msg = event_data_message(event_data=event_data)
             kbrd = current_event_keyboard(event_data=event_data)
-        await self.edit_message_text(
+        await self.clear_messages(message=query, state=state, finish=True)
+        await query.message.answer(
+            text=msg,
+            reply_markup=kbrd)
+        """ await self.edit_message_text(
             chat_id=query.from_user.id,
             message_id=query.message.message_id,
             text=msg,
-            reply_markup=kbrd)
+            reply_markup=kbrd) """
 
     async def open_event(
             self,
             query: CallbackQuery,
+            state: FSMContext,
             event_id: int):
         db = Database()
         event = await db.select_event_by_id(event_id=event_id)
@@ -133,23 +142,24 @@ class FitnessDepartmentBot(Bot):
         else:
             msg = event_data_message(event_data=event)
             kbrd = current_event_keyboard(event_data=event)
-        await self.edit_message_text(
+        await self.clear_messages(message=query, state=state, finish=False)
+        await query.message.answer(text=msg, reply_markup=kbrd)
+        """ await self.edit_message_text(
             chat_id=query.from_user.id,
             message_id=query.message.message_id,
             text=msg,
-            reply_markup=kbrd)
+            reply_markup=kbrd) """
 
     async def newsletter(
             self,
             query: CallbackQuery,
+            state: FSMContext,
             event_id: int):
         db = Database()
         event = await db.select_event_by_id(event_id=event_id)
-        print(event)
         recievers = await db.select_recievers_list(
             department_id=event[6],
             subdivision_id=event[8])
-        print(recievers)
         msg = 'Нет целевой аудитории'
         kbrd = back_button()
         if recievers != []:
@@ -173,15 +183,18 @@ class FitnessDepartmentBot(Bot):
             event = await db.select_event_by_id(event_id=event_id)
             msg = event_data_message(event_data=event)
             kbrd = current_event_keyboard(event_data=event)
-        await self.edit_message_text(
+        await self.clear_messages(message=query, state=state, finish=False)
+        await query.message.answer(text=msg, reply_markup=kbrd)
+        """ await self.edit_message_text(
             chat_id=query.from_user.id,
             message_id=query.message.message_id,
             text=msg,
-            reply_markup=kbrd)
+            reply_markup=kbrd) """
 
     async def statistics(
             self,
             query: CallbackQuery,
+            state: FSMContext,
             event_id: int):
         db = Database()
         customers_enroll = await db.select_enroll_list(event_id=event_id)
@@ -189,8 +202,36 @@ class FitnessDepartmentBot(Bot):
         #     event_id=event_id)
         enroll_msg = customers_enroll_message(data=customers_enroll)
         # recievers_msg = customers_recievers_message(data=customers_recievers)
-        await self.edit_message_text(
+        await self.clear_messages(message=query, state=state, finish=False)
+        await query.message.answer(text=enroll_msg, reply_markup=back_button())
+        """ await self.edit_message_text(
             chat_id=query.from_user.id,
             message_id=query.message.message_id,
             text=enroll_msg,
-            reply_markup=back_button())
+            reply_markup=back_button()) """
+
+    async def new_user_newsletter(self, telegram_id: int):
+        db = Database()
+        events_to_send = await db.select_new_user_events_to_send(telegram_id=telegram_id)
+        print(events_to_send)
+        counter = 0
+        for event in events_to_send:
+            available_to_send = await db.check_users_dep_and_subdiv(
+                department_id=event[6],
+                subdivision_id=event[8],
+                telegram_id=telegram_id
+            )
+            print(available_to_send)
+            if available_to_send is not None:
+                if counter > 10:
+                    await sleep(1)
+                await self.send_message(
+                    chat_id=telegram_id,
+                    text=customer_event_data_message(event),
+                    reply_markup=await customer_event_keyboard(
+                        event_id=event[0],
+                        customer_id=telegram_id))
+                await db.insert_reciever(
+                    event_id=event[0],
+                    customer_id=telegram_id)
+                counter += 1

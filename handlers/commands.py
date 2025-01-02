@@ -30,7 +30,7 @@ router = Router()
 async def dev_command(message: Message, state: FSMContext) -> None:
     await state.clear()
     db = Database()
-    user1 = await db.insert_into_user_auth(
+    await db.insert_into_user_auth(
         phone='79998533965',
         last_name='Холов',
         first_name='Сайфуллои',
@@ -40,7 +40,7 @@ async def dev_command(message: Message, state: FSMContext) -> None:
         username=message.from_user.username)
     await db.update_user_is_admin_status(
         is_admin=True, phone='79998533965')
-    user2 = await db.insert_into_user_auth(
+    await db.insert_into_user_auth(
         phone='79262840574',
         last_name='Чистяков',
         first_name='Александр',
@@ -50,7 +50,6 @@ async def dev_command(message: Message, state: FSMContext) -> None:
         username='aleksandr_chistiakov')
     await db.update_user_is_admin_status(
         is_admin=True, phone='79262840574')
-    print(user1, user2)
 
 
 @router.message(Command('del'), IsDev(), IsAuth(), IsPrivate())
@@ -110,7 +109,7 @@ async def start_admin_command(message: Message, state: FSMContext) -> None:
     await state.clear()
     db = Database()
     user_data = await db.select_user_by_sign(sign=message.from_user.id)
-    await message.answer(
+    """ await message.answer(
         text=user_menu_message(
             last_name=user_data[3],
             first_name=user_data[4],
@@ -135,7 +134,7 @@ async def start_admin_command(message: Message, state: FSMContext) -> None:
                 if status is not None
             ]
         ),
-        reply_markup=menu_keyboard())
+        reply_markup=menu_keyboard()) """
     await message.answer(
         text=admin_menu_message(
             first_name=user_data[4],
