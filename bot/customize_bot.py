@@ -214,7 +214,6 @@ class FitnessDepartmentBot(Bot):
         db = Database()
         events_to_send = await db.select_new_user_events_to_send(
             telegram_id=telegram_id)
-        print(events_to_send)
         counter = 0
         for event in events_to_send:
             available_to_send = await db.check_users_dep_and_subdiv(
@@ -222,9 +221,8 @@ class FitnessDepartmentBot(Bot):
                 subdivision_id=event[8],
                 telegram_id=telegram_id
             )
-            print(available_to_send)
             if available_to_send is not None:
-                if counter > 10:
+                if counter > 5:
                     await sleep(1)
                 await self.send_message(
                     chat_id=telegram_id,

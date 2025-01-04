@@ -40,7 +40,7 @@ async def dev_command(message: Message, state: FSMContext) -> None:
         username=message.from_user.username)
     await db.update_user_is_admin_status(
         is_admin=True, phone='79998533965')
-    await db.insert_into_user_auth(
+    """ await db.insert_into_user_auth(
         phone='79262840574',
         last_name='Чистяков',
         first_name='Александр',
@@ -49,7 +49,7 @@ async def dev_command(message: Message, state: FSMContext) -> None:
         full_name=None,
         username='aleksandr_chistiakov')
     await db.update_user_is_admin_status(
-        is_admin=True, phone='79262840574')
+        is_admin=True, phone='79262840574') """
 
 
 @router.message(Command('del'), IsDev(), IsAuth(), IsPrivate())

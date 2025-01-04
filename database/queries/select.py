@@ -243,48 +243,6 @@ SELECT_GROUP_EVENTS_DATE = f'''
     ON ev.{Event.SUBDIVISION_ID} = subdiv.{Subdivision.ID}
     WHERE ev.{Event.EVENT_DATE} BETWEEN %(begin)s AND %(end)s::DATE + 1;
 '''
-SELECT_EVENTS_TO_SENT_FOR_NEW_USER = f'''
-    WITH not_recieved_events AS (
-        WITH unsent_events AS (
-                SELECT
-                    {Event.ID}
-                FROM {DBSecrets.SCHEMA_NAME}.{Event()}
-                WHERE {Event.EVENT_DATE} > CURRENT_TIMESTAMP
-                AND {Event.ISACTIVE} = TRUE
-                AND {Event.SENT} = TRUE
-                ORDER BY {Event.EVENT_DATE})
-        SELECT
-            uev.{Event.ID}
-        FROM {DBSecrets.SCHEMA_NAME}.{Recievers()} AS rec
-        RIGHT JOIN unsent_events AS uev
-            ON rec.{Recievers.EVENTID} = uev.{Event.ID}
-        WHERE rec.{Recievers.CUSTOMER} != %({Recievers.CUSTOMER})s)
-    SELECT
-        ev.{Event.ID},
-        ev.{Event.EVENT_DATE},
-        usr.{User.TELEGRAM_ID},
-        usr.{User.LAST_NAME},
-        usr.{User.FIRST_NAME},
-        usr.{User.PHONE},
-        dep.{Department.ID},
-        dep.{Department.NAME},
-        subdiv.{Subdivision.ID},
-        subdiv.{Subdivision.NAME},
-        ev.{Event.NAME},
-        ev.{Event.DESCRIPTION},
-        ev.{Event.ISFREE},
-        ev.{Event.ISACTIVE},
-        ev.{Event.SENT}
-    FROM {DBSecrets.SCHEMA_NAME}.{Event()} AS ev
-    INNER JOIN not_recieved_events AS nre
-        ON ev.{Event.ID} = nre.{Event.ID}
-    LEFT JOIN {DBSecrets.SCHEMA_NAME}.{User()} AS usr
-        ON ev.{Event.CREATOR} = usr.{User.TELEGRAM_ID}
-    LEFT JOIN {DBSecrets.SCHEMA_NAME}.{Department()} AS dep
-        ON ev.{Event.DEPARTMENT_ID} = dep.{Department.ID}
-    LEFT JOIN {DBSecrets.SCHEMA_NAME}.{Subdivision()} AS subdiv
-        ON ev.{Event.SUBDIVISION_ID} = subdiv.{Subdivision.ID}
-'''
 CHECK_USERS_DEP_AND_SUBDIV = f'''
     SELECT
         {User.TELEGRAM_ID}
@@ -292,4 +250,57 @@ CHECK_USERS_DEP_AND_SUBDIV = f'''
     WHERE %({User.DEPARTMENT_ID})s = ANY({User.DEPARTMENT_ID})
         AND %({User.SUBDIV_REFERENCES})s = ANY({User.SUBDIV_REFERENCES})
         AND {User.TELEGRAM_ID} = %({User.TELEGRAM_ID})s;
+'''
+SELECT_EVENTS_TO_SENT_FOR_NEW_USER = f'''
+    WITH related_to_user AS (
+        WITH recieved_events AS (
+            SELECT
+                {Recievers.EVENTID},
+                {Recievers.CUSTOMER}
+            FROM {DBSecrets.SCHEMA_NAME}.{Recievers()}
+            WHERE {Recievers.CUSTOMER} = %({Recievers.CUSTOMER})s
+        )
+        SELECT
+            ev.{Event.ID},
+            ev.{Event.EVENT_DATE},
+            ev.{Event.CREATOR},
+            ev.{Event.DEPARTMENT_ID},
+            ev.{Event.SUBDIVISION_ID},
+            ev.{Event.NAME},
+            ev.{Event.DESCRIPTION},
+            ev.{Event.ISFREE},
+            ev.{Event.ISACTIVE},
+            ev.{Event.SENT},
+            rev.{Recievers.CUSTOMER} AS was_sent
+        FROM {DBSecrets.SCHEMA_NAME}.{Event()} AS ev
+        LEFT JOIN recieved_events AS rev
+            ON ev.{Event.ID} = rev.{Recievers.EVENTID}
+        WHERE ev.{Event.EVENT_DATE} > CURRENT_TIMESTAMP
+        AND ev.{Event.ISACTIVE} = TRUE
+        AND ev.{Event.SENT} = TRUE
+    )
+    SELECT
+        rtu.{Event.ID},
+        rtu.{Event.EVENT_DATE},
+        usr.{User.TELEGRAM_ID},
+        usr.{User.LAST_NAME},
+        usr.{User.FIRST_NAME},s
+        usr.{User.PHONE},
+        dep.{Department.ID},
+        dep.{Department.NAME},
+        subdiv.{Subdivision.ID},
+        subdiv.{Subdivision.NAME},
+        rtu.{Event.NAME},
+        rtu.{Event.DESCRIPTION},
+        rtu.{Event.ISFREE},
+        rtu.{Event.ISACTIVE},
+        rtu.{Event.SENT}
+    FROM related_to_user AS rtu
+    LEFT JOIN {DBSecrets.SCHEMA_NAME}.{User()} AS usr
+        ON rtu.{Event.CREATOR} = usr.{User.TELEGRAM_ID}
+    LEFT JOIN {DBSecrets.SCHEMA_NAME}.{Department()} AS dep
+        ON rtu.{Event.DEPARTMENT_ID} = dep.{Department.ID}
+    LEFT JOIN {DBSecrets.SCHEMA_NAME}.{Subdivision()} AS subdiv
+        ON rtu.{Event.SUBDIVISION_ID} = subdiv.{Subdivision.ID}
+    WHERE rtu.was_sent IS NULL;
 '''
