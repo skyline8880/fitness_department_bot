@@ -284,7 +284,7 @@ SELECT_EVENTS_TO_SENT_FOR_NEW_USER = f'''
         rtu.{Event.EVENT_DATE},
         usr.{User.TELEGRAM_ID},
         usr.{User.LAST_NAME},
-        usr.{User.FIRST_NAME},s
+        usr.{User.FIRST_NAME},
         usr.{User.PHONE},
         dep.{Department.ID},
         dep.{Department.NAME},

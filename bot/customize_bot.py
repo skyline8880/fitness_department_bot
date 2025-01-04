@@ -102,7 +102,8 @@ class FitnessDepartmentBot(Bot):
         await message_object.answer(
             text=welcome_after_auth_choose_department_message(),
             reply_markup=await department_keydoard(
-                telegram_id=user_data_from_db[0],
+                telegram_id=user_data_from_db[6],
+                is_admin=user_data_from_db[1],
                 welcome=[Action.TOSUBDIVS]))
 
     async def create_event(
