@@ -16,11 +16,12 @@ def welcome_message(first_name):
             'можно отписаться, повторив нажатие.'),
         markdown.markdown_decoration.quote('При желании, можно'),
         markdown.markdown_decoration.quote('выбрать несколько клубов.\n'),
+        markdown.markdown_decoration.quote('Далее перейдите к выбору'),
+        markdown.markdown_decoration.quote('подразделений по принципу.'),
+        markdown.markdown_decoration.quote('выбора клуба.\n'),
         markdown.markdown_decoration.quote('После подписки, Вам будет'),
         markdown.markdown_decoration.quote('поступать информация о'),
-        markdown.markdown_decoration.quote('мероприятиях клуба.\n'),
-        markdown.markdown_decoration.quote('Далее перейдите к выбору'),
-        markdown.markdown_decoration.quote('подразделений.'),
+        markdown.markdown_decoration.quote('предстоящих мероприятиях.\n'),
         sep='\n')
 
 
