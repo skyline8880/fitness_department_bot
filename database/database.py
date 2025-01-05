@@ -29,7 +29,7 @@ from database.queries.update import (UPDATE_ADD_DEPARTMENT_TO_USER,
                                      UPDATE_EVENT_SENT, UPDATE_EVENT_STATUS,
                                      UPDATE_REMOVE_DEPARTMENT_FROM_USER,
                                      UPDATE_REMOVE_SUBDIVISION_FROM_USER,
-                                     UPDATE_USER_DATA, UPDATE_USER_IS_ADMIN)
+                                     UPDATE_USER_IS_ADMIN)
 from database.tables import (Department, Enroll, Event, Recievers, Subdivision,
                              User)
 from utils.paths import set_path
@@ -52,6 +52,7 @@ class Database():
             username = f'@{username}'
         con = await self.connection()
         cur = con.cursor()
+        user = False
         try:
             await cur.execute(
                 query=INSERT_INTO_USER_AUTH,
@@ -65,21 +66,10 @@ class Database():
                     f'{User.USERNAME}': username})
             user = await cur.fetchone()
         except UniqueViolation:
+            print(f'Update user by phone: {phone}')
+        except Exception as e:
+            print(e)
             await con.rollback()
-            await cur.execute(
-                query=UPDATE_USER_DATA,
-                params={
-                    f'{User.PHONE}': phone,
-                    f'{User.LAST_NAME}': last_name,
-                    f'{User.FIRST_NAME}': first_name,
-                    f'{User.PATRONYMIC}': patronymic,
-                    f'{User.TELEGRAM_ID}': telegram_id,
-                    f'{User.FULLNAME}': full_name,
-                    f'{User.USERNAME}': username})
-            user = await self.select_user_by_sign(sign=phone)
-        except Exception:
-            await con.rollback()
-            user = False
         finally:
             await con.commit()
             await con.close()
@@ -113,7 +103,6 @@ class Database():
             return user
 
     async def insert_event(self, data):
-        print(data)
         (
             _,
             creator,

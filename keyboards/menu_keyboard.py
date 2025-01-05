@@ -1,6 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from filters.callback_filters import Menu, MenuCD
+from constants.actions import Action
+from filters.callback_filters import ActionsCD, Menu, MenuCD
 
 club_menu_button = [
     InlineKeyboardButton(
@@ -13,6 +14,18 @@ subdiv_menu_button = [
         text=Menu.SUBDIV.value,
         callback_data=MenuCD(
             menu_act=Menu.SUBDIV).pack())
+]
+to_subdivs_button = [
+    InlineKeyboardButton(
+        text=Action.TOSUBDIVS.value,
+        callback_data=ActionsCD(
+            action=Action.TOSUBDIVS).pack())
+]
+to_menu_button = [
+    InlineKeyboardButton(
+        text=Action.TOMENU.value,
+        callback_data=ActionsCD(
+            action=Action.TOMENU).pack())
 ]
 
 

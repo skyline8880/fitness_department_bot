@@ -23,12 +23,15 @@ router = Router()
 async def to_subdivs_after_auth(query: CallbackQuery) -> None:
     action = query.data.split(':')[-1]
     await query.answer(action)
+    db = Database()
+    user_data = await db.select_user_by_sign(sign=query.from_user.id)
     await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=welcome_after_auth_choose_subdivision_message(),
         reply_markup=await subdivision_keydoard(
-            telegram_id=query.from_user.id, welcome=[Action.TOMENU]))
+            telegram_id=query.from_user.id,
+            is_admin=user_data[1]))
 
 
 @router.callback_query(
@@ -117,8 +120,7 @@ async def menu_buttons_choose(query: CallbackQuery) -> None:
         text=msg,
         reply_markup=await method(
             telegram_id=query.from_user.id,
-            is_admin=user_data[1],
-            welcome=[Action.TOMENU])
+            is_admin=user_data[1])
     )
     """ await bot.edit_message_text(
         chat_id=query.from_user.id,
@@ -140,21 +142,20 @@ async def choose_department(query: CallbackQuery) -> None:
     if int(status) == 0:
         is_add = True
         msg = 'Добавлен клуб'
-        await bot.new_user_newsletter(telegram_id=query.from_user.id)
     await query.answer(msg)
     await db.update_add_remove_users_department(
         depatment_id=int(dep_id),
         telegram_id=query.from_user.id,
         is_add=is_add)
-    additional_button = [Action.TOMENU]
+    is_welcome = False
     if 'Перейдите к выбору' in query.message.text:
-        additional_button = [Action.TOSUBDIVS]
+        is_welcome = True
     user_data = await db.select_user_by_sign(sign=query.from_user.id)
     await query.message.edit_reply_markup(
         reply_markup=await department_keydoard(
             telegram_id=query.from_user.id,
             is_admin=user_data[1],
-            welcome=additional_button))
+            is_welcome=is_welcome))
     if is_add:
         await bot.new_user_newsletter(telegram_id=query.from_user.id)
 
@@ -180,7 +181,6 @@ async def choose_subdivision(query: CallbackQuery) -> None:
     await query.message.edit_reply_markup(
         reply_markup=await subdivision_keydoard(
             telegram_id=query.from_user.id,
-            is_admin=user_data[1],
-            welcome=[Action.TOMENU]))
+            is_admin=user_data[1]))
     if is_add:
         await bot.new_user_newsletter(telegram_id=query.from_user.id)

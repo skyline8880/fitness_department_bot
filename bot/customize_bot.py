@@ -11,7 +11,6 @@ from bot.message.admins.events import (  # customers_recievers_message,
     customer_event_data_message, customers_enroll_message, event_data_message)
 from bot.message.welcome import (welcome_after_auth_choose_department_message,
                                  welcome_message)
-from constants.actions import Action
 from database.database import Database
 from keyboards.admins.events_menu import (back_button, current_event_keyboard,
                                           customer_event_keyboard)
@@ -104,7 +103,7 @@ class FitnessDepartmentBot(Bot):
             reply_markup=await department_keydoard(
                 telegram_id=user_data_from_db[6],
                 is_admin=user_data_from_db[1],
-                welcome=[Action.TOSUBDIVS]))
+                is_welcome=True))
 
     async def create_event(
             self,

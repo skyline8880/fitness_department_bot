@@ -58,7 +58,28 @@ async def to_menu_action(
     await query.message.answer(
         text=admin_menu_message(
             first_name=user_data[4],
-            phone=user_data[2]),
+            phone=user_data[2],
+            clubs=[
+                club
+                for
+                _,
+                club,
+                status
+                in await db.select_user_departments_by_sign(
+                    telegram_id=query.from_user.id)
+                if status is not None
+            ],
+            subdivs=[
+                subdiv
+                for
+                _,
+                subdiv,
+                status
+                in await db.select_user_references_by_sign(
+                    telegram_id=query.from_user.id)
+                if status is not None
+            ]
+        ),
         reply_markup=admin_keydoard()
     )
     """ await bot.edit_message_text(

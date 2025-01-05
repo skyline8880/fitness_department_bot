@@ -20,6 +20,13 @@ INSERT_INTO_USER_AUTH = f'''
         %({User.FULLNAME})s,
         %({User.USERNAME})s
     )
+    ON CONFLICT ({User.PHONE}) DO UPDATE
+        SET {User.LAST_NAME} = %({User.LAST_NAME})s,
+            {User.FIRST_NAME} = %({User.FIRST_NAME})s,
+            {User.PATRONYMIC} = %({User.PATRONYMIC})s,
+            {User.TELEGRAM_ID} = %({User.TELEGRAM_ID})s,
+            {User.FULLNAME} = %({User.FULLNAME})s,
+            {User.USERNAME} = %({User.USERNAME})s
     RETURNING
         {User.ID},
         {User.ISADMIN},

@@ -1,11 +1,12 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from database.database import Database
-from filters.callback_filters import ActionsCD, DepartmentsCD, ReferencesCD
+from filters.callback_filters import DepartmentsCD, ReferencesCD
 from keyboards.admins.admins_menu import menu_button
+from keyboards.menu_keyboard import to_menu_button, to_subdivs_button
 
 
-async def department_keydoard(telegram_id, is_admin=False, welcome=None):
+async def department_keydoard(telegram_id, is_admin=False, is_welcome=False):
     db = Database()
     users_department_data = await db.select_user_departments_by_sign(
         telegram_id=telegram_id)
@@ -25,25 +26,18 @@ async def department_keydoard(telegram_id, is_admin=False, welcome=None):
                         is_checked=is_checked).pack())
             ]
         )
-    if is_admin:
-        department_buttons.append(menu_button)
-        return InlineKeyboardMarkup(
-            row_width=1, inline_keyboard=department_buttons)
-    if welcome is not None:
-        for button in welcome:
-            department_buttons.append(
-                [
-                    InlineKeyboardButton(
-                        text=button.value,
-                        callback_data=ActionsCD(
-                            action=button).pack())
-                ]
-            )
+    if is_welcome:
+        department_buttons.append(to_subdivs_button)
+    else:
+        if is_admin:
+            department_buttons.append(menu_button)
+        else:
+            department_buttons.append(to_menu_button)
     return InlineKeyboardMarkup(
         row_width=1, inline_keyboard=department_buttons)
 
 
-async def subdivision_keydoard(telegram_id, is_admin=False, welcome=None):
+async def subdivision_keydoard(telegram_id, is_admin=False):
     db = Database()
     users_reference_data = await db.select_user_references_by_sign(
         telegram_id=telegram_id)
@@ -65,17 +59,7 @@ async def subdivision_keydoard(telegram_id, is_admin=False, welcome=None):
         )
     if is_admin:
         references_buttons.append(menu_button)
-        return InlineKeyboardMarkup(
-            row_width=1, inline_keyboard=references_buttons)
-    if welcome is not None:
-        for button in welcome:
-            references_buttons.append(
-                [
-                    InlineKeyboardButton(
-                        text=button.value,
-                        callback_data=ActionsCD(
-                            action=button).pack())
-                ]
-            )
+    else:
+        references_buttons.append(to_menu_button)
     return InlineKeyboardMarkup(
         row_width=1, inline_keyboard=references_buttons)
