@@ -6,7 +6,8 @@ from filters.callback_filters import (AdminMenuActions, AdminMenuActionsCD,
                                       CurrentEventActions,
                                       CustomerEventActionsCD, EventFreeActions,
                                       EventPayment, EventsActions,
-                                      EventsActionsCD)
+                                      EventsActionsCD,
+                                      SkipPhotoCD, SkipPhoto)
 
 
 def events_keydoard():
@@ -32,7 +33,7 @@ def events_keydoard():
         row_width=1, inline_keyboard=buttons)
 
 
-def back_button():
+def back_button(expecting_photo: bool = False):
     buttons = [
         [
             InlineKeyboardButton(
@@ -41,6 +42,15 @@ def back_button():
                     admen_act=AdminMenuActions.BACK).pack())
         ]
     ]
+    if expecting_photo:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text=SkipPhoto.NOPHOTO.value,
+                    callback_data=SkipPhotoCD(
+                        admen_act=SkipPhoto.NOPHOTO).pack())
+            ]            
+        )
     return InlineKeyboardMarkup(
         row_width=1, inline_keyboard=buttons)
 

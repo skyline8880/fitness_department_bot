@@ -57,3 +57,7 @@ class DateReports(Enum):
     PREVIOUS = '📅 Предыдущий месяц'
     CURRENT = '📅 Текущиий месяц'
     PERIOD = '📅 Выбрать период'
+
+
+class SkipPhoto(Enum):
+    NOPHOTO = 'Без фото'

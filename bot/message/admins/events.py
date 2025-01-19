@@ -50,6 +50,13 @@ def event_choose_r_type(r_type):
         sep='\n')
 
 
+def event_add_photo():
+    return markdown.text(
+        markdown.markdown_decoration.quote(
+                'Добавьте изображение события.'),
+        sep='\n')
+
+
 def event_choose_name():
     return markdown.text(
         markdown.markdown_decoration.quote(
@@ -98,6 +105,15 @@ def wrong_text_format():
                 'Некорректный формат ввода!'),
         markdown.markdown_decoration.quote(
                 'Введите текстовое сообщение.'),
+        sep='\n')
+
+
+def wrong_photo_format():
+    return markdown.text(
+        markdown.markdown_decoration.quote(
+                'Некорректный формат ввода!'),
+        markdown.markdown_decoration.quote(
+                'Отправьте изображение.'),
         sep='\n')
 
 

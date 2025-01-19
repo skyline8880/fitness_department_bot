@@ -14,14 +14,16 @@ from bot.message.admins.events import (event_choose_date,
                                        event_choose_minute, event_choose_name,
                                        event_choose_r_type,
                                        event_choose_subdivision,
-                                       events_choose_page, wrong_text_format)
+                                       events_choose_page, wrong_text_format,
+                                       event_add_photo, wrong_photo_format)
 from database.database import Database
 from filters.callback_filters import (CurrenEventActionsCD,
                                       CurrentEventActions,
                                       CustomerEventActionsCD, EventDepartment,
                                       EventPayment, EventsActions,
-                                      EventsActionsCD, EventSubdivision)
-from filters.filters import IsAdmin, IsAuth, IsPrivate, IsText
+                                      EventsActionsCD, EventSubdivision,
+                                      SkipPhotoCD, SkipPhoto)
+from filters.filters import IsAdmin, IsAuth, IsPrivate, IsText, IsPhoto
 from keyboards.admins.date_menu import (DateMove, DatePick, DatePicker,
                                         DateRange, OpenRange, ScrollRange)
 from keyboards.admins.departs_and_subdivs import (department_keydoard,
@@ -368,16 +370,60 @@ async def event_timeminute_actions(
         second=0)
     await state.update_data(event_date=date)
     # await state.update_data(start_message=query.message.message_id)
-    await state.set_state(AddEventAdmin.name)
+    await state.set_state(AddEventAdmin.photo)
     await bot.clear_messages(message=query, state=state, finish=False)
     await query.message.answer(
-        text=event_choose_name(),
-        reply_markup=back_button())
+        text=event_add_photo(),
+        reply_markup=back_button(expecting_photo=True))
     """ await bot.edit_message_text(
         chat_id=query.from_user.id,
         message_id=query.message.message_id,
         text=event_choose_name(),
         reply_markup=back_button()) """
+
+
+@router.message(AddEventAdmin.photo, IsPhoto(), IsAdmin(), IsPrivate())
+async def get_event_photo(message: Message, state: FSMContext) -> None:
+    await state.update_data(photo=message.photo[-1].file_id)
+    await state.set_state(AddEventAdmin.name)
+    await bot.clear_messages(message=message, state=state, finish=False)
+    await message.answer(
+        text=event_choose_name(),
+        reply_markup=back_button())
+
+
+@router.message(AddEventAdmin.photo, ~IsPhoto(), IsAdmin(), IsPrivate())
+async def get_wrong_event_photo(message: Message) -> None:
+    m_id = message.message_id + 1
+    try:
+        await message.delete()
+    except Exception as e:
+        print(f'wrong message delete error {e}')
+    await message.answer(text=wrong_photo_format())
+    await sleep(5)
+    try:
+        await bot.delete_message(
+            chat_id=message.from_user.id,
+            message_id=m_id)
+    except Exception as e:
+        print(f'message was deleted by user {e}')
+
+
+@router.callback_query(
+        SkipPhotoCD.filter(
+            F.skip_photo == SkipPhoto.NOPHOTO),
+        IsPrivate(),
+        IsAdmin())
+async def skip_event_photo(
+        query: CallbackQuery, state: FSMContext) -> None:
+    action = query.data.split(':')[-1]
+    await query.answer(action)
+    await state.update_data(photo=None)
+    await state.set_state(AddEventAdmin.name)
+    await bot.clear_messages(message=query, state=state, finish=False)
+    await query.message.answer(
+        text=event_choose_name(),
+        reply_markup=back_button())
 
 
 @router.message(AddEventAdmin.name, IsText(), IsAdmin(), IsPrivate())
@@ -418,15 +464,18 @@ async def get_event_description(message: Message, state: FSMContext) -> None:
 async def get_wrong_name_or_description(
         message: Message, state: FSMContext) -> None:
     m_id = message.message_id + 1
-    await bot.clear_messages(message=message, state=state, finish=False)
+    try:
+        await message.delete()
+    except Exception as e:
+        print(f'wrong message delete error {e}')
     await message.answer(text=wrong_text_format())
     await sleep(5)
     try:
         await bot.delete_message(
             chat_id=message.from_user.id,
             message_id=m_id)
-    except Exception:
-        print('message was deleted by user')
+    except Exception as e:
+        print(f'message was deleted by user {e}')
 
 
 @router.callback_query(

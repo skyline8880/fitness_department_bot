@@ -21,6 +21,7 @@ class AddEventAdmin(StatesGroup):
     department_id = State()
     subdivision_id = State()
     event_date = State()
+    photo = State()
     name = State()
     description = State()
     isfree = State()

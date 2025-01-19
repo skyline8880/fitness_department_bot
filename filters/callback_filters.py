@@ -3,7 +3,7 @@ from aiogram.filters.callback_data import CallbackData
 from constants.actions import (Action, AdminMenu, AdminMenuActions,
                                AdminsActions, CurrentEventActions, DateReports,
                                EventFreeActions, EventsActions, Menu,
-                               ReportsActions)
+                               ReportsActions, SkipPhoto)
 
 
 class ReferencesCD(CallbackData, prefix='ref'):
@@ -68,3 +68,7 @@ class CustomerEventActionsCD(CallbackData, prefix='custom_act'):
 
 class DateReportsCD(CallbackData, prefix='dt_rep'):
     date_report: DateReports
+
+
+class SkipPhotoCD(CallbackData, prefix='skip_photo'):
+    skip_photo: SkipPhoto

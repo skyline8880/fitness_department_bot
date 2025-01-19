@@ -54,6 +54,11 @@ class IsText(Filter):
         return message.content_type == ContentType.TEXT.value
 
 
+class IsPhoto(Filter):
+    async def __call__(self, message: Union[Message, CallbackQuery]) -> bool:
+        return message.content_type == ContentType.PHOTO.value
+
+
 class IsPhone(Filter):
     async def __call__(self, message: Message) -> bool:
         try:
