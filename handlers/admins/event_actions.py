@@ -7,23 +7,23 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from bot.bot import bot
-from bot.message.admins.events import (event_choose_date,
+from bot.message.admins.events import (event_add_photo, event_choose_date,
                                        event_choose_department,
                                        event_choose_description,
                                        event_choose_hour, event_choose_is_free,
                                        event_choose_minute, event_choose_name,
                                        event_choose_r_type,
                                        event_choose_subdivision,
-                                       events_choose_page, wrong_text_format,
-                                       event_add_photo, wrong_photo_format)
+                                       events_choose_page, wrong_photo_format,
+                                       wrong_text_format)
 from database.database import Database
 from filters.callback_filters import (CurrenEventActionsCD,
                                       CurrentEventActions,
                                       CustomerEventActionsCD, EventDepartment,
                                       EventPayment, EventsActions,
                                       EventsActionsCD, EventSubdivision,
-                                      SkipPhotoCD, SkipPhoto)
-from filters.filters import IsAdmin, IsAuth, IsPrivate, IsText, IsPhoto
+                                      SkipPhoto, SkipPhotoCD)
+from filters.filters import IsAdmin, IsAuth, IsPhoto, IsPrivate, IsText
 from keyboards.admins.date_menu import (DateMove, DatePick, DatePicker,
                                         DateRange, OpenRange, ScrollRange)
 from keyboards.admins.departs_and_subdivs import (department_keydoard,
