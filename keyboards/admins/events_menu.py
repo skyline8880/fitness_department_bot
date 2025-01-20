@@ -47,7 +47,7 @@ def back_button(expecting_photo: bool = False):
                 InlineKeyboardButton(
                     text=SkipPhoto.NOPHOTO.value,
                     callback_data=SkipPhotoCD(
-                        admen_act=SkipPhoto.NOPHOTO).pack())
+                        skip_photo=SkipPhoto.NOPHOTO).pack())
             ]
         )
     return InlineKeyboardMarkup(
@@ -97,7 +97,8 @@ def current_event_keyboard(event_data):
         event_description,
         event_isfree,
         event_isactive,
-        event_sent
+        event_sent,
+        photo_id
     ) = event_data
     buttons = []
     if not event_sent:

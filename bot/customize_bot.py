@@ -120,14 +120,16 @@ class FitnessDepartmentBot(Bot):
             msg = event_data_message(event_data=event_data)
             kbrd = current_event_keyboard(event_data=event_data)
         await self.clear_messages(message=query, state=state, finish=True)
-        await query.message.answer(
-            text=msg,
-            reply_markup=kbrd)
-        """ await self.edit_message_text(
-            chat_id=query.from_user.id,
-            message_id=query.message.message_id,
-            text=msg,
-            reply_markup=kbrd) """
+        if event_data[-1] is not None:
+            await self.send_photo(
+                chat_id=query.from_user.id,
+                photo=event_data[-1],
+                caption=msg,
+                reply_markup=kbrd)
+        else:
+            await query.message.answer(
+                text=msg,
+                reply_markup=kbrd)
 
     async def open_event(
             self,
@@ -143,12 +145,16 @@ class FitnessDepartmentBot(Bot):
             msg = event_data_message(event_data=event)
             kbrd = current_event_keyboard(event_data=event)
         await self.clear_messages(message=query, state=state, finish=False)
-        await query.message.answer(text=msg, reply_markup=kbrd)
-        """ await self.edit_message_text(
-            chat_id=query.from_user.id,
-            message_id=query.message.message_id,
-            text=msg,
-            reply_markup=kbrd) """
+        if event[-1] is not None:
+            await self.send_photo(
+                chat_id=query.from_user.id,
+                photo=event[-1],
+                caption=msg,
+                reply_markup=kbrd)
+        else:
+            await query.message.answer(
+                text=msg,
+                reply_markup=kbrd)
 
     async def newsletter(
             self,
@@ -160,36 +166,51 @@ class FitnessDepartmentBot(Bot):
         recievers = await db.select_recievers_list(
             department_id=event[6],
             subdivision_id=event[8])
+        await self.clear_messages(message=query, state=state, finish=False)
         msg = 'Нет целевой аудитории'
         kbrd = back_button()
-        if recievers != []:
-            for reciever in recievers:
-                try:
+        if recievers == []:
+            return await query.message.answer(text=msg, reply_markup=kbrd)
+        for reciever in recievers:
+            try:
+                if event[-1] is not None:
+                    await self.send_photo(
+                        chat_id=reciever[0],
+                        photo=event[-1],
+                        caption=customer_event_data_message(event),
+                        reply_markup=await customer_event_keyboard(
+                            event_id=event_id,
+                            customer_id=reciever[0]))
+                else:
                     await self.send_message(
                         chat_id=reciever[0],
                         text=customer_event_data_message(event),
                         reply_markup=await customer_event_keyboard(
                             event_id=event_id,
                             customer_id=reciever[0]))
-                    await db.insert_reciever(
-                        event_id=event_id,
-                        customer_id=reciever[0])
-                except Exception as e:
-                    print(
-                        f'Ошибка рассылки: ID события: {event_id}'
-                        f' ID получателя: {reciever[0]}\n'
-                        f'{e}')
-            await db.update_event_sent(status=True, event_id=event_id)
-            event = await db.select_event_by_id(event_id=event_id)
-            msg = event_data_message(event_data=event)
-            kbrd = current_event_keyboard(event_data=event)
-        await self.clear_messages(message=query, state=state, finish=False)
-        await query.message.answer(text=msg, reply_markup=kbrd)
-        """ await self.edit_message_text(
-            chat_id=query.from_user.id,
-            message_id=query.message.message_id,
-            text=msg,
-            reply_markup=kbrd) """
+                await db.insert_reciever(
+                    event_id=event_id,
+                    customer_id=reciever[0])
+            except Exception as e:
+                print(
+                    f'Ошибка рассылки: ID события: {event_id}'
+                    f' ID получателя: {reciever[0]}\n'
+                    f'{e}')
+        await db.update_event_sent(status=True, event_id=event_id)
+        event = await db.select_event_by_id(event_id=event_id)
+        msg = event_data_message(event_data=event)
+        kbrd = current_event_keyboard(event_data=event)
+        if event[-1] is not None:
+            await self.send_photo(
+                chat_id=query.from_user.id,
+                photo=event[-1],
+                caption=msg,
+                reply_markup=kbrd)
+        else:
+            await self.send_message(
+                chat_id=query.from_user.id,
+                text=msg,
+                reply_markup=kbrd)
 
     async def statistics(
             self,
@@ -204,11 +225,6 @@ class FitnessDepartmentBot(Bot):
         # recievers_msg = customers_recievers_message(data=customers_recievers)
         await self.clear_messages(message=query, state=state, finish=False)
         await query.message.answer(text=enroll_msg, reply_markup=back_button())
-        """ await self.edit_message_text(
-            chat_id=query.from_user.id,
-            message_id=query.message.message_id,
-            text=enroll_msg,
-            reply_markup=back_button()) """
 
     async def new_user_newsletter(self, telegram_id: int):
         db = Database()
@@ -224,12 +240,21 @@ class FitnessDepartmentBot(Bot):
             if available_to_send is not None:
                 if counter > 5:
                     await sleep(1)
-                await self.send_message(
-                    chat_id=telegram_id,
-                    text=customer_event_data_message(event),
-                    reply_markup=await customer_event_keyboard(
-                        event_id=event[0],
-                        customer_id=telegram_id))
+                if event[-1] is not None:
+                    await self.send_photo(
+                        chat_id=telegram_id,
+                        photo=event[-1],
+                        caption=customer_event_data_message(event),
+                        reply_markup=await customer_event_keyboard(
+                            event_id=event[0],
+                            customer_id=telegram_id))
+                else:
+                    await self.send_message(
+                        chat_id=telegram_id,
+                        text=customer_event_data_message(event),
+                        reply_markup=await customer_event_keyboard(
+                            event_id=event[0],
+                            customer_id=telegram_id))
                 await db.insert_reciever(
                     event_id=event[0],
                     customer_id=telegram_id)

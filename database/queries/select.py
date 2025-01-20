@@ -99,7 +99,8 @@ SELECT_EVENT_BY_ID = f'''
         ev.{Event.DESCRIPTION},
         ev.{Event.ISFREE},
         ev.{Event.ISACTIVE},
-        ev.{Event.SENT}
+        ev.{Event.SENT},
+        ev.{Event.PHOTOID}
     FROM {DBSecrets.SCHEMA_NAME}.{Event()} AS ev
     LEFT JOIN {DBSecrets.SCHEMA_NAME}.{User()} AS usr
         ON ev.{Event.CREATOR} = usr.{User.TELEGRAM_ID}
@@ -120,7 +121,8 @@ SELECT_COMMING_EVENTS = f'''
         {Event.DESCRIPTION},
         {Event.ISFREE},
         {Event.ISACTIVE},
-        {Event.SENT}
+        {Event.SENT},
+        {Event.PHOTOID}
     FROM {DBSecrets.SCHEMA_NAME}.{Event()}
     WHERE {Event.EVENT_DATE} > CURRENT_TIMESTAMP
     AND {Event.ISACTIVE} = TRUE
@@ -137,7 +139,8 @@ SELECT_COMMING_EVENTS_BY_SENT_STATUS = f'''
         {Event.DESCRIPTION},
         {Event.ISFREE},
         {Event.ISACTIVE},
-        {Event.SENT}
+        {Event.SENT},
+        {Event.PHOTOID}
     FROM {DBSecrets.SCHEMA_NAME}.{Event()}
     WHERE {Event.EVENT_DATE} > CURRENT_TIMESTAMP
     AND {Event.ISACTIVE} = TRUE
@@ -271,6 +274,7 @@ SELECT_EVENTS_TO_SENT_FOR_NEW_USER = f'''
             ev.{Event.ISFREE},
             ev.{Event.ISACTIVE},
             ev.{Event.SENT},
+            ev.{Event.PHOTOID}
             rev.{Recievers.CUSTOMER} AS was_sent
         FROM {DBSecrets.SCHEMA_NAME}.{Event()} AS ev
         LEFT JOIN recieved_events AS rev
@@ -294,7 +298,8 @@ SELECT_EVENTS_TO_SENT_FOR_NEW_USER = f'''
         rtu.{Event.DESCRIPTION},
         rtu.{Event.ISFREE},
         rtu.{Event.ISACTIVE},
-        rtu.{Event.SENT}
+        rtu.{Event.SENT},
+        rtu.{Event.PHOTOID}
     FROM related_to_user AS rtu
     LEFT JOIN {DBSecrets.SCHEMA_NAME}.{User()} AS usr
         ON rtu.{Event.CREATOR} = usr.{User.TELEGRAM_ID}

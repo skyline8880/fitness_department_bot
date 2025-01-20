@@ -2,6 +2,7 @@ import datetime as dt
 from asyncio import sleep
 
 from aiogram import F, Router
+from aiogram.enums.content_type import ContentType
 from aiogram.filters import or_f
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
@@ -156,7 +157,10 @@ async def current_event_choose(
 async def current_event_actions(
         query: CallbackQuery, state: FSMContext) -> None:
     action = query.data.split(':')[-1]
-    event_id = query.message.text.split('\n')[0].split(':')[-1].strip()
+    if query.message.content_type == ContentType.PHOTO.value:
+        event_id = query.message.caption.split('\n')[0].split(':')[-1].strip()
+    else:
+        event_id = query.message.text.split('\n')[0].split(':')[-1].strip()
     await query.answer(f'{action}')
     db = Database()
     if action == CurrentEventActions.SEND.value:
@@ -214,11 +218,6 @@ async def event_subdivision_choose(
     await query.message.answer(
         text=event_choose_date(),
         reply_markup=DatePicker())
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=event_choose_date(),
-        reply_markup=DatePicker()) """
 
 
 @router.callback_query(
@@ -236,14 +235,6 @@ async def event_date_move_actions(
             year=int(year),
             month=int(month),
             day=int(day)))
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=event_choose_date(),
-        reply_markup=DatePicker(
-            year=int(year),
-            month=int(month),
-            day=int(day))) """
 
 
 @router.callback_query(
@@ -262,15 +253,6 @@ async def event_scroll_year_actions(
             year=int(year),
             month=int(month),
             day=int(day)))
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=event_choose_r_type(r_type=r_type),
-        reply_markup=DateRange(
-            r_type=r_type,
-            year=int(year),
-            month=int(month),
-            day=int(day))) """
 
 
 @router.callback_query(
@@ -289,15 +271,6 @@ async def event_open_range_actions(
             year=int(year),
             month=int(month),
             day=int(day)))
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=event_choose_r_type(r_type=r_type),
-        reply_markup=DateRange(
-            r_type=r_type,
-            year=int(year),
-            month=int(month),
-            day=int(day))) """
 
 
 @router.callback_query(
@@ -317,14 +290,6 @@ async def event_datepick_actions(
             year=int(year),
             month=int(month),
             day=int(day)))
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=event_choose_hour(),
-        reply_markup=HourPicker(
-            year=int(year),
-            month=int(month),
-            day=int(day))) """
 
 
 @router.callback_query(
@@ -343,15 +308,6 @@ async def event_timehour_actions(
             month=int(month),
             day=int(day),
             hour=int(hour)))
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=event_choose_minute(),
-        reply_markup=MinutePicker(
-            year=int(year),
-            month=int(month),
-            day=int(day),
-            hour=int(hour))) """
 
 
 @router.callback_query(
@@ -375,11 +331,6 @@ async def event_timeminute_actions(
     await query.message.answer(
         text=event_add_photo(),
         reply_markup=back_button(expecting_photo=True))
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=event_choose_name(),
-        reply_markup=back_button()) """
 
 
 @router.message(AddEventAdmin.photo, IsPhoto(), IsAdmin(), IsPrivate())
@@ -435,11 +386,6 @@ async def get_event_name(message: Message, state: FSMContext) -> None:
     await message.answer(
         text=event_choose_description(),
         reply_markup=back_button())
-    """ await bot.edit_message_text(
-        chat_id=message.from_user.id,
-        message_id=int(data['start_message']),
-        text=event_choose_description(),
-        reply_markup=back_button()) """
 
 
 @router.message(AddEventAdmin.description, IsText(), IsAdmin(), IsPrivate())
@@ -451,11 +397,6 @@ async def get_event_description(message: Message, state: FSMContext) -> None:
     await message.answer(
         text=event_choose_is_free(),
         reply_markup=free_type_keyboard())
-    """ await bot.edit_message_text(
-        chat_id=message.from_user.id,
-        message_id=int(data['start_message']),
-        text=event_choose_is_free(),
-        reply_markup=free_type_keyboard()) """
 
 
 @router.message(
@@ -496,7 +437,10 @@ async def event_payment_actions(
         IsAuth())
 async def customer_event_actions(
         query: CallbackQuery, state: FSMContext) -> None:
-    event_id = query.message.text.split('\n')[0].split(':')[-1].strip()
+    if query.message.content_type == ContentType.PHOTO.value:
+        event_id = query.message.caption.split('\n')[0].split(':')[-1].strip()
+    else:
+        event_id = query.message.text.split('\n')[0].split(':')[-1].strip()
     act_id, act_name = query.data.split(':')[1:]
     await query.answer(act_name)
     db = Database()

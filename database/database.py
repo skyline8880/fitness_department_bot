@@ -109,6 +109,7 @@ class Database():
             department_id,
             subdivision_id,
             event_date,
+            photo_id,
             name,
             description,
             isfree
@@ -128,7 +129,9 @@ class Database():
                     f'{Event.EVENT_DATE}': event_date,
                     f'{Event.NAME}': name,
                     f'{Event.DESCRIPTION}': description,
-                    f'{Event.ISFREE}': _isfree})
+                    f'{Event.ISFREE}': _isfree,
+                    f'{Event.PHOTOID}': photo_id,
+                    })
             event = await cur.fetchone()
         except Exception as e:
             await con.rollback()

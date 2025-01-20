@@ -133,7 +133,8 @@ def event_data_message(event_data):
         event_description,
         event_isfree,
         event_isactive,
-        event_sent
+        event_sent,
+        _
     ) = event_data
     creator = f'{creator_lname} {creator_fname}'
     date = dt.datetime.strftime(event_date, '%d.%m.%Y')
@@ -226,6 +227,7 @@ def customer_event_data_message(event_data):
         event_name,
         event_description,
         event_isfree,
+        _,
         _,
         _
     ) = event_data
