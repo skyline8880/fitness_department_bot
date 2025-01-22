@@ -231,6 +231,46 @@ def customer_event_data_message(event_data):
         _,
         _
     ) = event_data
+    date = dt.datetime.strftime(event_date, '%d %B %Y').lower()
+    time = dt.datetime.strftime(event_date, '%H:%M')
+    pay = 'Бесплатно'
+    if not event_isfree:
+        pay = 'Платно'
+    return markdown.text(
+        markdown.text(
+            f'🟣 {markdown.bold(event_name)}\n'),
+        markdown.text(
+            f'📅 {markdown.bold(date, "года в")} {markdown.bold(time)}'),
+        markdown.text(
+            f'🏢 {markdown.bold(department)}'),
+        markdown.text(
+            f'📋 {markdown.bold(subdivision)}\n'),
+        markdown.text(
+            f'{markdown.bold(event_description)}\n'),
+        markdown.text(
+            markdown.bold("₽", pay)),
+        sep='\n')
+
+
+""" def customer_event_data_message(event_data):
+    (
+        event_id,
+        event_date,
+        _,
+        _,
+        _,
+        _,
+        _,
+        department,
+        _,
+        subdivision,
+        event_name,
+        event_description,
+        event_isfree,
+        _,
+        _,
+        _
+    ) = event_data
     date = dt.datetime.strftime(event_date, '%d.%m.%Y')
     time = dt.datetime.strftime(event_date, '%H:%M')
     pay = 'Бесплатно'
@@ -261,4 +301,4 @@ def customer_event_data_message(event_data):
         markdown.text(
                 markdown.markdown_decoration.quote('Участие:'),
                 f'{markdown.bold(pay)}'),
-        sep='\n')
+        sep='\n') """

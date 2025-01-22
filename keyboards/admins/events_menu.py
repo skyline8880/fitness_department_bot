@@ -101,30 +101,35 @@ def current_event_keyboard(event_data):
         photo_id
     ) = event_data
     buttons = []
+    # event_id = int(event_id)
     if not event_sent:
         buttons.append(
             [
                 InlineKeyboardButton(
                     text=CurrentEventActions.SEND.value,
                     callback_data=CurrenEventActionsCD(
-                        curev_act=CurrentEventActions.SEND).pack())
+                        curev_act=CurrentEventActions.SEND,
+                        event_id=event_id).pack())
             ]
         )
     activate_action = InlineKeyboardButton(
             text=CurrentEventActions.ACTIVATE.value,
             callback_data=CurrenEventActionsCD(
-                curev_act=CurrentEventActions.ACTIVATE).pack())
+                curev_act=CurrentEventActions.ACTIVATE,
+                event_id=event_id).pack())
     if event_isactive:
         activate_action = InlineKeyboardButton(
                 text=CurrentEventActions.DELETE.value,
                 callback_data=CurrenEventActionsCD(
-                    curev_act=CurrentEventActions.DELETE).pack())
+                    curev_act=CurrentEventActions.DELETE,
+                    event_id=event_id).pack())
     buttons.append(
             [
                 InlineKeyboardButton(
                     text=CurrentEventActions.STATS.value,
                     callback_data=CurrenEventActionsCD(
-                        curev_act=CurrentEventActions.STATS).pack()),
+                        curev_act=CurrentEventActions.STATS,
+                        event_id=event_id).pack()),
                 activate_action
             ],
     )
@@ -158,7 +163,8 @@ async def customer_event_keyboard(event_id, customer_id):
                     text=f'{stat} {act_name}',
                     callback_data=CustomerEventActionsCD(
                         act_id=act_id,
-                        custom_act=act_name).pack())
+                        custom_act=act_name,
+                        event_id=event_id).pack())
             ]
         )
     return InlineKeyboardMarkup(

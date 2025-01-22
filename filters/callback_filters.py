@@ -55,6 +55,7 @@ class ReportsActionsCD(CallbackData, prefix='report_act'):
 
 class CurrenEventActionsCD(CallbackData, prefix='curev_act'):
     curev_act: CurrentEventActions
+    event_id: int
 
 
 class AdminMenuActionsCD(CallbackData, prefix='admen_act'):
@@ -64,6 +65,7 @@ class AdminMenuActionsCD(CallbackData, prefix='admen_act'):
 class CustomerEventActionsCD(CallbackData, prefix='custom_act'):
     act_id: int
     custom_act: str
+    event_id: int
 
 
 class DateReportsCD(CallbackData, prefix='dt_rep'):

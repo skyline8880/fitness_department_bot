@@ -2,7 +2,6 @@ import datetime as dt
 from asyncio import sleep
 
 from aiogram import F, Router
-from aiogram.enums.content_type import ContentType
 from aiogram.filters import or_f
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
@@ -63,11 +62,6 @@ async def events_actions(
         return
     await bot.clear_messages(message=query, state=state, finish=False)
     await query.message.answer(text=msg, reply_markup=kbrd)
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=msg,
-        reply_markup=kbrd) """
 
 
 @router.callback_query(
@@ -85,11 +79,6 @@ async def event_list_navigation(
         return
     await bot.clear_messages(message=query, state=state, finish=False)
     await query.message.answer(text=msg, reply_markup=kbrd)
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=msg,
-        reply_markup=kbrd) """
 
 
 @router.callback_query(
@@ -107,11 +96,6 @@ async def event_page_range(
         return
     await bot.clear_messages(message=query, state=state, finish=False)
     await query.message.answer(text=events_choose_page(), reply_markup=kbrd)
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=events_choose_page(),
-        reply_markup=kbrd) """
 
 
 @router.callback_query(
@@ -129,11 +113,6 @@ async def current_page_choose(
         return
     await bot.clear_messages(message=query, state=state, finish=False)
     await query.message.answer(text=msg, reply_markup=kbrd)
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=msg,
-        reply_markup=kbrd) """
 
 
 @router.callback_query(
@@ -156,11 +135,7 @@ async def current_event_choose(
         IsAdmin())
 async def current_event_actions(
         query: CallbackQuery, state: FSMContext) -> None:
-    action = query.data.split(':')[-1]
-    if query.message.content_type == ContentType.PHOTO.value:
-        event_id = query.message.caption.split('\n')[0].split(':')[-1].strip()
-    else:
-        event_id = query.message.text.split('\n')[0].split(':')[-1].strip()
+    action, event_id = query.data.split(':')[1:]
     await query.answer(f'{action}')
     db = Database()
     if action == CurrentEventActions.SEND.value:
@@ -197,11 +172,6 @@ async def event_department_choose(
     await query.message.answer(
         text=event_choose_subdivision(),
         reply_markup=await subdivision_keydoard())
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=event_choose_subdivision(),
-        reply_markup=await subdivision_keydoard()) """
 
 
 @router.callback_query(
@@ -437,11 +407,7 @@ async def event_payment_actions(
         IsAuth())
 async def customer_event_actions(
         query: CallbackQuery, state: FSMContext) -> None:
-    if query.message.content_type == ContentType.PHOTO.value:
-        event_id = query.message.caption.split('\n')[0].split(':')[-1].strip()
-    else:
-        event_id = query.message.text.split('\n')[0].split(':')[-1].strip()
-    act_id, act_name = query.data.split(':')[1:]
+    act_id, act_name, event_id = query.data.split(':')[1:]
     await query.answer(act_name)
     db = Database()
     await db.insert_enroll(

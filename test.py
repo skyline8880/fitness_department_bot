@@ -19,19 +19,8 @@ async def main():
     db = Database()
     start_date = dt.datetime(year=2025, month=1, day=10, hour=10, minute=0, second=0)
     end_date = dt.datetime(year=2025, month=1, day=20, hour=10, minute=0, second=0)
-    date_range = pd.date_range(start=start_date, end=end_date).tolist()
-    connect = await db.connection()
-    cursor = connect.cursor()
-
-    await cursor.execute("""
-        SELECT * FROM fit.event;
-""")
-    events = await cursor.fetchall()
-    await cursor.close()
-    await connect.close()
-    for event in events:
-        print(event)
-
+    ks = dt.datetime.strftime(start_date, '%d %B %Y').lower()
+    print(ks)
 
 if __name__ == '__main__':
     asyncio.run(main=main())
