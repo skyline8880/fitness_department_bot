@@ -274,7 +274,7 @@ SELECT_EVENTS_TO_SENT_FOR_NEW_USER = f'''
             ev.{Event.ISFREE},
             ev.{Event.ISACTIVE},
             ev.{Event.SENT},
-            ev.{Event.PHOTOID}
+            ev.{Event.PHOTOID},
             rev.{Recievers.CUSTOMER} AS was_sent
         FROM {DBSecrets.SCHEMA_NAME}.{Event()} AS ev
         LEFT JOIN recieved_events AS rev
