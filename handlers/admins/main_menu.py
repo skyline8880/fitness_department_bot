@@ -36,11 +36,6 @@ async def admin_menu_actions(
         text=action_message(action=action),
         reply_markup=kbrd()
     )
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=action_message(action=action),
-        reply_markup=kbrd()) """
 
 
 @router.callback_query(
@@ -82,13 +77,6 @@ async def to_menu_action(
         ),
         reply_markup=admin_keydoard()
     )
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=admin_menu_message(
-            first_name=user_data[4],
-            phone=user_data[2]),
-        reply_markup=admin_keydoard()) """
 
 
 @router.callback_query(
@@ -104,8 +92,3 @@ async def back_action(
         text=action_message(action=action),
         reply_markup=events_keydoard()
     )
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=action_message(action=action),
-        reply_markup=events_keydoard()) """

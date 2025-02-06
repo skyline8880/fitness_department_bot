@@ -9,7 +9,8 @@ from aiogram.types import BotCommand, CallbackQuery, Message
 
 from bot.message.admins.events import (  # customers_recievers_message,
     customer_event_data_message, customers_enroll_message, event_data_message)
-from bot.message.welcome import (welcome_after_auth_choose_department_message,
+from bot.message.welcome import (thanks_for_choice,
+                                 welcome_after_auth_choose_department_message,
                                  welcome_message)
 from database.database import Database
 from keyboards.admins.events_menu import (back_button, current_event_keyboard,
@@ -96,6 +97,8 @@ class FitnessDepartmentBot(Bot):
                 message.from_user.username)
             return
         await self.clear_messages(message=message, state=state, finish=True)
+        await message_object.answer(
+            text=thanks_for_choice())
         await message_object.answer(
             text=welcome_message(first_name=user_data_from_db[4]))
         await message_object.answer(

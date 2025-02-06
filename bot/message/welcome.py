@@ -38,3 +38,13 @@ def welcome_after_auth_choose_subdivision_message():
         markdown.markdown_decoration.quote(
             'в которых Вам интересны мероприятия.'),
         sep='\n')
+
+
+def thanks_for_choice():
+    return markdown.text(
+        markdown.markdown_decoration.quote('Спасибо за регистрацию,'),
+        markdown.markdown_decoration.quote(
+            'мы учтем ваш выбор'),
+        markdown.markdown_decoration.quote(
+            'для показа рекомендаций.'),
+        sep='\n')

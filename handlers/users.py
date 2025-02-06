@@ -71,34 +71,6 @@ async def to_menu_action(query: CallbackQuery) -> None:
         ),
         reply_markup=menu_keyboard()
     )
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=user_menu_message(
-            last_name=user_data[3],
-            first_name=user_data[4],
-            clubs=[
-                club
-                for
-                _,
-                club,
-                status
-                in await db.select_user_departments_by_sign(
-                    telegram_id=query.from_user.id)
-                if status is not None
-            ],
-            subdivs=[
-                subdiv
-                for
-                _,
-                subdiv,
-                status
-                in await db.select_user_references_by_sign(
-                    telegram_id=query.from_user.id)
-                if status is not None
-            ]
-        ),
-        reply_markup=menu_keyboard()) """
 
 
 @router.callback_query(
@@ -122,12 +94,6 @@ async def menu_buttons_choose(query: CallbackQuery) -> None:
             telegram_id=query.from_user.id,
             is_admin=user_data[1])
     )
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=msg,
-        reply_markup=await method(
-            telegram_id=query.from_user.id, welcome=[Action.TOMENU])) """
 
 
 @router.callback_query(
