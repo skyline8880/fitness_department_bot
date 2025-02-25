@@ -15,7 +15,7 @@ from bot.message.admins.events import (event_add_photo, event_choose_date,
                                        event_choose_r_type,
                                        event_choose_subdivision,
                                        events_choose_page, wrong_photo_format,
-                                       wrong_text_format)
+                                       wrong_text_format, wrong_text_length)
 from database.database import Database
 from filters.callback_filters import (CurrenEventActionsCD,
                                       CurrentEventActions,
@@ -360,6 +360,14 @@ async def get_event_name(message: Message, state: FSMContext) -> None:
 
 @router.message(AddEventAdmin.description, IsText(), IsAdmin(), IsPrivate())
 async def get_event_description(message: Message, state: FSMContext) -> None:
+    if len(message.text) > 814:
+        await message.reply(
+            text=wrong_text_length(
+                current_length=len(message.text),
+                available_length=814
+            )
+        )
+        return
     await state.update_data(description=message.text)
     # data = await state.get_data()
     await state.set_state(AddEventAdmin.isfree)

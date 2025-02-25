@@ -108,6 +108,17 @@ def wrong_text_format():
         sep='\n')
 
 
+def wrong_text_length(current_length, available_length):
+    return markdown.text(
+        markdown.markdown_decoration.quote(
+                'Слишком длинное описание'),
+        markdown.markdown_decoration.quote(
+                f'Доступно не более {available_length} симовлов'),
+        markdown.markdown_decoration.quote(
+                f'Вы внесли {current_length}'),
+        sep='\n')
+
+
 def wrong_photo_format():
     return markdown.text(
         markdown.markdown_decoration.quote(

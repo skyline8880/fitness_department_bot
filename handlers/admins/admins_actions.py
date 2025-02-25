@@ -111,11 +111,6 @@ async def get_admins_phone(message: Message, state: FSMContext) -> None:
             text=action_message(action=AdminMenu.ADMINS.value),
             reply_markup=admins_keydoard()
         )
-        """ return await bot.edit_message_text(
-            chat_id=message.from_user.id,
-            message_id=int(data['start_message']),
-            text=msg,
-            reply_markup=back_to_admins()) """
     await message.answer(text=msg)
     await sleep(5)
     try:
@@ -158,8 +153,3 @@ async def to_menu_action(
         text=action_message(action=AdminMenu.ADMINS.value),
         reply_markup=admins_keydoard()
     )
-    """ await bot.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=action_message(action=AdminMenu.ADMINS.value),
-        reply_markup=admins_keydoard()) """
