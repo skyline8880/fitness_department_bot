@@ -252,6 +252,14 @@ async def event_datepick_actions(
     year, month, day = query.data.split(':')[1:]
     if day == '0':
         return await query.answer("Выберите день")
+    date = dt.datetime(
+        year=int(year),
+        month=int(month),
+        day=int(day))
+    if date < dt.datetime.now().date():
+        await query.answer(
+            f'Недопустимое значение: {day}.{month}.{year}!')
+        return
     await query.answer(f'{int(day):02d}.{int(month):02d}.{int(year)}')
     await bot.clear_messages(message=query, state=state, finish=False)
     await query.message.answer(
@@ -295,7 +303,8 @@ async def event_timeminute_actions(
         minute=int(minute),
         second=0)
     if date < dt.datetime.now():
-        await query.answer('Дата события раньше текущей!')
+        await query.answer(
+            f'Недопустимое значение: {day}.{month}.{year} {hour}:{minute}!')
         return
     await state.update_data(event_date=date)
     # await state.update_data(start_message=query.message.message_id)

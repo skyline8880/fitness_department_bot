@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Any, Dict, Union
 
 import aiohttp
 
@@ -12,43 +12,78 @@ class Bitrix24():
         self.dep = department_sign
         self.webhook = None
 
+    async def params_form(
+            self,
+            keys: list,
+            params: Dict[str, Any]) -> str:
+        result = ''
+        for key in keys:
+            if isinstance(params[key], list):
+                for n, lv in enumerate(params[key]):
+                    result += f'{key}[{n}]={lv}&'
+            elif isinstance(params[key], dict):
+                for k, dv in params[key].items():
+                    if isinstance(dv, list):
+                        for n, lv in enumerate(dv):
+                            result += f'{key}[{k}][{n}]={lv}&'
+                    else:
+                        result += f'{key}[{k}]={dv}&'
+            else:
+                result += f'{key}={params[key]}&'
+        return result
+
     async def collect(self):
         self.webhook = BitrixSecrets(department_id=self.dep).webhook()
         return self
 
-    async def get_bitrix_deal_list(self):
+    async def get_bitrix_deal_list(self, **params):
         url = f'{self.webhook}/crm.deal.list'
+        str_params = await self.params_form(keys=params.keys(), params=params)
         async with aiohttp.ClientSession() as session:
-            async with session.get(url=url) as response:
+            async with session.get(url=url, params=str_params) as response:
                 return await response.json()
 
-    async def get_deal_fields(self):
+    async def get_deal_fields(self, **params):
         url = f'{self.webhook}/crm.deal.fields'
         async with aiohttp.ClientSession() as session:
             async with session.get(url=url) as response:
                 return await response.json()
 
-    async def get_deal(self, deal_id):
+    async def get_deal(self, **params):
         url = f'{self.webhook}/crm.deal.get'
-        params = {'id': deal_id}
+        str_params = await self.params_form(keys=params.keys(), params=params)
         async with aiohttp.ClientSession() as session:
-            async with session.get(url=url, params=params) as response:
+            async with session.get(url=url, params=str_params) as response:
                 return await response.json()
 
-    async def get_timeline_fields(self):
+    async def get_timeline_fields(self, **params):
         url = f'{self.webhook}/crm.timeline.comment.fields'
         async with aiohttp.ClientSession() as session:
             async with session.get(url=url) as response:
                 return await response.json()
 
-    async def get_category_list(self, entity_type_id):
-        params = {'entityTypeId': entity_type_id}
-        url = f'{self.webhook}/crm.category.list'
+    async def get_category_fields(self, **params):
+        url = f'{self.webhook}/crm.category.fields'
+        str_params = await self.params_form(keys=params.keys(), params=params)
         async with aiohttp.ClientSession() as session:
-            async with session.get(url=url, params=params) as response:
+            async with session.get(url=url, params=str_params) as response:
                 return await response.json()
 
-    async def get_conatact_list(self):
+    async def get_category_stage_list(self, **params):
+        url = f'{self.webhook}/crm.dealcategory.stage.list'
+        str_params = await self.params_form(keys=params.keys(), params=params)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url=url, params=str_params) as response:
+                return await response.json()
+
+    async def get_category_list(self, **params):
+        url = f'{self.webhook}/crm.category.list'
+        str_params = await self.params_form(keys=params.keys(), params=params)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url=url, params=str_params) as response:
+                return await response.json()
+
+    async def get_conatact_list(self, **params):
         url = f'{self.webhook}/crm.contact.list'
         async with aiohttp.ClientSession() as session:
             async with session.get(url=url) as response:
