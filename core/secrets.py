@@ -26,3 +26,18 @@ class TelegramSectrets:
     BOT_TOKEN = os.getenv('BOT_TOKEN')
     BOT_USERNAME = os.getenv('BOT_USERNAME')
     DEVELOPER = int(os.getenv('DEVELOPER'))
+
+
+class BitrixSecrets():
+    def __init__(self, department_id):
+        self.departments = {
+            1: 'empty',
+            2: os.getenv('MSK'),
+            3: os.getenv('VLK'),
+            4: os.getenv('NKR'),
+            5: os.getenv('BTV')
+        }
+        self.webhook_ = self.departments[department_id]
+
+    def webhook(self):
+        return self.webhook_

@@ -294,6 +294,9 @@ async def event_timeminute_actions(
         hour=int(hour),
         minute=int(minute),
         second=0)
+    if date < dt.datetime.now():
+        await query.answer('Дата события раньше текущей!')
+        return
     await state.update_data(event_date=date)
     # await state.update_data(start_message=query.message.message_id)
     await state.set_state(AddEventAdmin.photo)
@@ -422,9 +425,12 @@ async def customer_event_actions(
         event_id=event_id,
         customer_id=query.from_user.id,
         enrollaction_id=act_id)
-    await bot.edit_message_reply_markup(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        reply_markup=await customer_event_keyboard(
-            event_id=event_id,
-            customer_id=query.from_user.id))
+    try:
+        await bot.edit_message_reply_markup(
+            chat_id=query.from_user.id,
+            message_id=query.message.message_id,
+            reply_markup=await customer_event_keyboard(
+                event_id=event_id,
+                customer_id=query.from_user.id))
+    except Exception as e:
+        print(f'USER: {query.from_user.id}  ACT NAME: {act_name}\n{e}')
