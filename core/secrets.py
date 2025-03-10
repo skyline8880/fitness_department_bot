@@ -31,11 +31,10 @@ class TelegramSectrets:
 class BitrixSecrets():
     def __init__(self, department_id):
         self.departments = {
-            1: 'empty',
-            2: os.getenv('MSK'),
-            3: os.getenv('VLK'),
-            4: os.getenv('NKR'),
-            5: os.getenv('BTV')
+            1: os.getenv('MSK'),
+            2: os.getenv('VLK'),
+            3: os.getenv('NKR'),
+            4: os.getenv('BTV')
         }
         self.webhook_ = self.departments[department_id]
 

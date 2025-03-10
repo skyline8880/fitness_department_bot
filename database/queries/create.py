@@ -25,6 +25,7 @@ CREATE = f'''
         {Enroll.EVENTID} BIGINT NOT NULL,
         {Enroll.CUSTOMER} BIGINT NOT NULL,
         {Enroll.ENROLLACTIONID} INTEGER NOT NULL,
+        {Enroll.DEALID} BIGINT DEFAULT NULL,
         PRIMARY KEY ({Enroll.EVENTID}, {Enroll.CUSTOMER})
     );
 

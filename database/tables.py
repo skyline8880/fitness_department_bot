@@ -66,6 +66,7 @@ class Enroll:
     EVENTID = 'event_id'
     CUSTOMER = 'telegram_id'
     ENROLLACTIONID = 'enroll_action_id'
+    DEALID = 'deal_id'
 
     def __str__(self) -> str:
         return 'enroll'

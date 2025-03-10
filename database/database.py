@@ -9,6 +9,7 @@ from database.queries.insert import (INSERT_INTO_ENROLL, INSERT_INTO_EVENT,
 from database.queries.select import (CHECK_USERS_DEP_AND_SUBDIV,
                                      SELECT_COMMING_EVENTS,
                                      SELECT_COMMING_EVENTS_BY_SENT_STATUS,
+                                     SELECT_CURRENT_CUSTOMER_DEALID,
                                      SELECT_CURRENT_CUSTOMER_ENROLL,
                                      SELECT_CUSTOMER_ENROLL_ACTIONS,
                                      SELECT_DEP_SUB_RECIEVERS_ID_LIST,
@@ -324,6 +325,18 @@ class Database():
         cur = con.cursor()
         await cur.execute(
             query=SELECT_CURRENT_CUSTOMER_ENROLL,
+            params={
+                f'{Enroll.EVENTID}': event_id,
+                f'{Enroll.CUSTOMER}': customer_id})
+        result = await cur.fetchone()
+        await con.close()
+        return result
+
+    async def select_current_customer_deal_id(self, event_id, customer_id):
+        con = await self.connection()
+        cur = con.cursor()
+        await cur.execute(
+            query=SELECT_CURRENT_CUSTOMER_DEALID,
             params={
                 f'{Enroll.EVENTID}': event_id,
                 f'{Enroll.CUSTOMER}': customer_id})

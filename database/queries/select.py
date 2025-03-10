@@ -175,6 +175,13 @@ SELECT_CURRENT_CUSTOMER_ENROLL = f'''
     WHERE {Enroll.EVENTID} = %({Enroll.EVENTID})s
         AND {Enroll.CUSTOMER} = %({Enroll.CUSTOMER})s;
 '''
+SELECT_CURRENT_CUSTOMER_DEALID = f'''
+    SELECT
+        {Enroll.DEALID}
+    FROM {DBSecrets.SCHEMA_NAME}.{Enroll()}
+    WHERE {Enroll.EVENTID} = %({Enroll.EVENTID})s
+        AND {Enroll.CUSTOMER} = %({Enroll.CUSTOMER})s;
+'''
 SELECT_CUSTOMER_ENROLL_ACTIONS = f'''
     SELECT
         {EnrollAction.ID},

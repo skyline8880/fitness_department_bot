@@ -6,6 +6,7 @@ from aiogram.filters import or_f
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
+from bitrix_api.requests import send_bitrix_request
 from bot.bot import bot
 from bot.message.admins.events import (event_add_photo, event_choose_date,
                                        event_choose_department,
@@ -432,6 +433,10 @@ async def customer_event_actions(
         event_id=event_id,
         customer_id=query.from_user.id,
         enrollaction_id=act_id)
+    await send_bitrix_request(
+        telegram_id=query.from_user.id,
+        event_id=event_id,
+        act_id=act_id)
     try:
         await bot.edit_message_reply_markup(
             chat_id=query.from_user.id,
