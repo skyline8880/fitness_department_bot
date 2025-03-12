@@ -101,7 +101,7 @@ async def send_bitrix_request(
             f'выбрал активность: {act_name}\n'
             f'по мероприятию: {event_name}\n'
             f'которое будет проходить: {date} в {time}\n'
-            f'в пдразделении: {subdivision}')
+            f'в подразделении: {subdivision}')
     else:
         if int(act_id) == 2:
             await bx24.update_deal(
