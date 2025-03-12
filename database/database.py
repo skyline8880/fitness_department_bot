@@ -27,7 +27,8 @@ from database.queries.select import (CHECK_USERS_DEP_AND_SUBDIV,
                                      SELECT_USER_REFERENCES_BY_SIGN)
 from database.queries.update import (UPDATE_ADD_DEPARTMENT_TO_USER,
                                      UPDATE_ADD_SUBDIVISION_TO_USER,
-                                     UPDATE_EVENT_SENT, UPDATE_EVENT_STATUS,
+                                     UPDATE_ENROLL_DEAL_ID, UPDATE_EVENT_SENT,
+                                     UPDATE_EVENT_STATUS,
                                      UPDATE_REMOVE_DEPARTMENT_FROM_USER,
                                      UPDATE_REMOVE_SUBDIVISION_FROM_USER,
                                      UPDATE_USER_IS_ADMIN)
@@ -342,7 +343,7 @@ class Database():
                 f'{Enroll.CUSTOMER}': customer_id})
         result = await cur.fetchone()
         await con.close()
-        return result
+        return result[0]
 
     async def select_customer_enroll_actions(self):
         con = await self.connection()
@@ -364,6 +365,18 @@ class Database():
         result = await cur.fetchall()
         await con.close()
         return result
+
+    async def update_enroll_deal_id(self, event_id, customer_id, deal_id):
+        con = await self.connection()
+        cur = con.cursor()
+        await cur.execute(
+            query=UPDATE_ENROLL_DEAL_ID,
+            params={
+                f'{Enroll.EVENTID}': event_id,
+                f'{Enroll.CUSTOMER}': customer_id,
+                f'{Enroll.DEALID}': deal_id})
+        await con.commit()
+        await con.close()
 
     async def update_event_status(self, status, event_id):
         con = await self.connection()

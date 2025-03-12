@@ -115,14 +115,16 @@ class FitnessDepartmentBot(Bot):
         data = await state.get_data()
         db = Database()
         add_success = await db.insert_event(data=data)
+        await self.clear_messages(message=query, state=state, finish=True)
         if not add_success:
             msg = 'ОШИБКА СОЗДАНИЯ СОБЫТИЯ'
             kbrd = back_button()
-        else:
-            event_data = await db.select_event_by_id(event_id=add_success[0])
-            msg = event_data_message(event_data=event_data)
-            kbrd = current_event_keyboard(event_data=event_data)
-        await self.clear_messages(message=query, state=state, finish=True)
+            return await query.message.answer(
+                text=msg,
+                reply_markup=kbrd)
+        event_data = await db.select_event_by_id(event_id=add_success[0])
+        msg = event_data_message(event_data=event_data)
+        kbrd = current_event_keyboard(event_data=event_data)
         if event_data[-1] is not None:
             await self.send_photo(
                 chat_id=query.from_user.id,

@@ -433,10 +433,6 @@ async def customer_event_actions(
         event_id=event_id,
         customer_id=query.from_user.id,
         enrollaction_id=act_id)
-    await send_bitrix_request(
-        telegram_id=query.from_user.id,
-        event_id=event_id,
-        act_id=act_id)
     try:
         await bot.edit_message_reply_markup(
             chat_id=query.from_user.id,
@@ -444,5 +440,14 @@ async def customer_event_actions(
             reply_markup=await customer_event_keyboard(
                 event_id=event_id,
                 customer_id=query.from_user.id))
+        await send_bitrix_request(
+            telegram_id=query.from_user.id,
+            event_id=event_id,
+            act_id=act_id,
+            act_name=act_name)
     except Exception as e:
-        print(f'USER: {query.from_user.id}  ACT NAME: {act_name}\n{e}')
+        print(
+            f'Пользователь - query.from_user.id: {query.from_user.id} '
+            f'повторно выбрал активность - act_name: {act_name}\n'
+            f'Описание: {e}'
+        )

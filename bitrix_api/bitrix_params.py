@@ -60,12 +60,12 @@ def merge_contacts(contact_ids: List) -> Dict:
     }
 
 
-def timeline_add_on_handover_json(deal_id, comment, user):
+def timeline_add_on_action(deal_id, comment):
     return {
         'fields': {
             'ENTITY_ID': deal_id,
             'ENTITY_TYPE': 'deal',
-            'COMMENT': f'{user}: {comment}',
+            'COMMENT': comment,
         }
     }
 

@@ -1,5 +1,5 @@
 from core.secrets import DBSecrets
-from database.tables import Event, User
+from database.tables import Enroll, Event, User
 
 UPDATE_USER_IS_ADMIN = f'''
     UPDATE {DBSecrets.SCHEMA_NAME}.{User()}
@@ -57,4 +57,10 @@ UPDATE_EVENT_SENT = f'''
     UPDATE {DBSecrets.SCHEMA_NAME}.{Event()}
         SET {Event.SENT} = %({Event.SENT})s
     WHERE {Event.ID} = %({Event.ID})s;
+'''
+UPDATE_ENROLL_DEAL_ID = f'''
+    UPDATE {DBSecrets.SCHEMA_NAME}.{Enroll()}
+        SET {Enroll.DEALID} = %({Enroll.DEALID})s
+    WHERE {Enroll.EVENTID} = %({Enroll.EVENTID})s
+        AND {Enroll.CUSTOMER} = %({Enroll.CUSTOMER})s;
 '''
