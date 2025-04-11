@@ -7,25 +7,29 @@ class DealDirection:
             1: {
                 'category_id': 31,
                 'assigned': 45,
-                'new': 'C31:NEW',
+                # 'new': 'C31:NEW',
+                'new': 'C31:2',
                 'won': 'C31:WON',
                 'cancel': 'C31:APOLOGY'},
             2: {
                 'category_id': 123,
                 'assigned': 85,
-                'new': 'C123:NEW',
+                # 'new': 'C123:NEW',
+                'new': 'C123:2',
                 'won': 'C123:WON',
                 'cancel': 'C123:APOLOGY'},
             3: {
                 'category_id': 20,
                 'assigned': 44,
-                'new': 'C20:NEW',
+                # 'new': 'C20:NEW',
+                'new': 'C20:2',
                 'won': 'C20:WON',
                 'cancel': 'C20:APOLOGY'},
             4: {
                 'category_id': 19,
                 'assigned': 59,
-                'new': 'C19:NEW',
+                # 'new': 'C19:NEW',
+                'new': 'C19:2',
                 'won': 'C19:WON',
                 'cancel': 'C19:APOLOGY'}
         }

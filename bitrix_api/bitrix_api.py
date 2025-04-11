@@ -37,9 +37,10 @@ class Bitrix24():
         return result
 
     async def collect(self):
-        db = Database()
+        """ db = Database()
         self.dep_id, self.dep_name = await db.select_department_by_sign(
-            sign=self.dep_sign)
+            sign=self.dep_sign) """
+        self.dep_id = self.dep_sign
         self.webhook = BitrixSecrets(department_id=self.dep_id).webhook()
         self.deal_direct = DealDirection(
             department_id=self.dep_id).get_direction()
