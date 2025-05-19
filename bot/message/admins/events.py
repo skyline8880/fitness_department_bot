@@ -71,6 +71,13 @@ def event_choose_description():
         sep='\n')
 
 
+def event_choose_executor():
+    return markdown.text(
+        markdown.markdown_decoration.quote(
+                'Укажите исполнителя, например:\nИванов Иван'),
+        sep='\n')
+
+
 def event_choose_is_free():
     return markdown.text(
         markdown.markdown_decoration.quote(
@@ -119,6 +126,24 @@ def wrong_text_length(current_length, available_length):
         sep='\n')
 
 
+def wrong_executor():
+    return markdown.text(
+        markdown.markdown_decoration.quote(
+                'Укажите фамилию и имя исполнителя.'),
+        sep='\n')
+
+
+def wrong_executor_length(length):
+    return markdown.text(
+        markdown.markdown_decoration.quote(
+                'Значение не должно быть'),
+        markdown.markdown_decoration.quote(
+                'длинее 100 символов.'),
+        markdown.markdown_decoration.quote(
+                f'Указано {length}'),
+        sep='\n')
+
+
 def wrong_photo_format():
     return markdown.text(
         markdown.markdown_decoration.quote(
@@ -145,7 +170,8 @@ def event_data_message(event_data):
         event_isfree,
         event_isactive,
         event_sent,
-        _
+        _,
+        executor
     ) = event_data
     creator = f'{creator_lname} {creator_fname}'
     date = dt.datetime.strftime(event_date, '%d.%m.%Y')
@@ -181,6 +207,9 @@ def event_data_message(event_data):
         markdown.text(
             markdown.markdown_decoration.quote('Подразделение:'),
             f'{markdown.bold(subdivision)}'),
+        markdown.text(
+            markdown.markdown_decoration.quote('Исполнитель:'),
+            f'{markdown.bold(executor)}'),
         markdown.text(
             markdown.markdown_decoration.quote('Название:'),
             f'{markdown.bold(event_name)}'),
@@ -240,7 +269,8 @@ def customer_event_data_message(event_data):
         event_isfree,
         _,
         _,
-        _
+        _,
+        executor
     ) = event_data
     date = dt.datetime.strftime(event_date, '%d %B %Y').lower()
     time = dt.datetime.strftime(event_date, '%H:%M')
@@ -255,7 +285,9 @@ def customer_event_data_message(event_data):
         markdown.text(
             f'🏢 {markdown.bold(department)}'),
         markdown.text(
-            f'📋 {markdown.bold(subdivision)}\n'),
+            f'📋 {markdown.bold(subdivision)}'),
+        markdown.text(
+            f'🧍 {markdown.bold(executor)}\n'),
         markdown.text(
             f'{markdown.bold(event_description)}\n'),
         markdown.text(

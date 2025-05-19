@@ -125,10 +125,10 @@ class FitnessDepartmentBot(Bot):
         event_data = await db.select_event_by_id(event_id=add_success[0])
         msg = event_data_message(event_data=event_data)
         kbrd = current_event_keyboard(event_data=event_data)
-        if event_data[-1] is not None:
+        if event_data[-2] is not None:
             await self.send_photo(
                 chat_id=query.from_user.id,
-                photo=event_data[-1],
+                photo=event_data[-2],
                 caption=msg,
                 reply_markup=kbrd)
         else:
@@ -150,10 +150,10 @@ class FitnessDepartmentBot(Bot):
             msg = event_data_message(event_data=event)
             kbrd = current_event_keyboard(event_data=event)
         await self.clear_messages(message=query, state=state, finish=False)
-        if event[-1] is not None:
+        if event[-2] is not None:
             await self.send_photo(
                 chat_id=query.from_user.id,
-                photo=event[-1],
+                photo=event[-2],
                 caption=msg,
                 reply_markup=kbrd)
         else:
@@ -178,10 +178,10 @@ class FitnessDepartmentBot(Bot):
             return await query.message.answer(text=msg, reply_markup=kbrd)
         for reciever in recievers:
             try:
-                if event[-1] is not None:
+                if event[-2] is not None:
                     await self.send_photo(
                         chat_id=reciever[0],
-                        photo=event[-1],
+                        photo=event[-2],
                         caption=customer_event_data_message(event),
                         reply_markup=await customer_event_keyboard(
                             event_id=event_id,
@@ -205,10 +205,10 @@ class FitnessDepartmentBot(Bot):
         event = await db.select_event_by_id(event_id=event_id)
         msg = event_data_message(event_data=event)
         kbrd = current_event_keyboard(event_data=event)
-        if event[-1] is not None:
+        if event[-2] is not None:
             await self.send_photo(
                 chat_id=query.from_user.id,
-                photo=event[-1],
+                photo=event[-2],
                 caption=msg,
                 reply_markup=kbrd)
         else:
@@ -245,10 +245,10 @@ class FitnessDepartmentBot(Bot):
             if available_to_send is not None:
                 if counter > 5:
                     await sleep(1)
-                if event[-1] is not None:
+                if event[-2] is not None:
                     await self.send_photo(
                         chat_id=telegram_id,
-                        photo=event[-1],
+                        photo=event[-2],
                         caption=customer_event_data_message(event),
                         reply_markup=await customer_event_keyboard(
                             event_id=event[0],

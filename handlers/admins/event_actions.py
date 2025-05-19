@@ -11,12 +11,15 @@ from bot.bot import bot
 from bot.message.admins.events import (event_add_photo, event_choose_date,
                                        event_choose_department,
                                        event_choose_description,
+                                       event_choose_executor,
                                        event_choose_hour, event_choose_is_free,
                                        event_choose_minute, event_choose_name,
                                        event_choose_r_type,
                                        event_choose_subdivision,
-                                       events_choose_page, wrong_photo_format,
-                                       wrong_text_format, wrong_text_length)
+                                       events_choose_page, wrong_executor,
+                                       wrong_executor_length,
+                                       wrong_photo_format, wrong_text_format,
+                                       wrong_text_length)
 from database.database import Database
 from filters.callback_filters import (CurrenEventActionsCD,
                                       CurrentEventActions,
@@ -380,6 +383,28 @@ async def get_event_description(message: Message, state: FSMContext) -> None:
         )
         return
     await state.update_data(description=message.text)
+    # data = await state.get_data()
+    await state.set_state(AddEventAdmin.executor)
+    await bot.clear_messages(message=message, state=state, finish=False)
+    await message.answer(
+        text=event_choose_executor(),
+        reply_markup=back_button())
+
+
+@router.message(AddEventAdmin.executor, IsText(), IsAdmin(), IsPrivate())
+async def get_event_executor(message: Message, state: FSMContext) -> None:
+    executor = None
+    try:
+        lname, fname = message.text.split()
+        executor = f"{lname.capitalize()} {fname.capitalize()}"
+    except Exception:
+        return await message.reply(
+                    text=wrong_executor())
+    if len(executor) > 100:
+        return await message.reply(
+            text=wrong_executor_length(
+                current_length=len(executor)))
+    await state.update_data(executor=executor)
     # data = await state.get_data()
     await state.set_state(AddEventAdmin.isfree)
     await bot.clear_messages(message=message, state=state, finish=False)

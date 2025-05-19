@@ -56,6 +56,7 @@ class Event:
     ISACTIVE = 'is_active'
     SENT = 'sent'
     PHOTOID = 'photo_id'
+    EXECUTOR = 'executor'
 
     def __str__(self) -> str:
         return 'event'

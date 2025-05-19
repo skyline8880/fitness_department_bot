@@ -24,6 +24,7 @@ class AddEventAdmin(StatesGroup):
     photo = State()
     name = State()
     description = State()
+    executor = State()
     isfree = State()
 
 

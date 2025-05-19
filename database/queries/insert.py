@@ -71,7 +71,8 @@ INSERT_INTO_EVENT = f'''
         {Event.NAME},
         {Event.DESCRIPTION},
         {Event.ISFREE},
-        {Event.PHOTOID}
+        {Event.PHOTOID},
+        {Event.EXECUTOR}
     )
     VALUES (
         %({Event.CREATOR})s,
@@ -82,6 +83,7 @@ INSERT_INTO_EVENT = f'''
         %({Event.DESCRIPTION})s,
         %({Event.ISFREE})s,
         %({Event.PHOTOID})s
+        %({Event.EXECUTOR})s
     )
     RETURNING
         {Event.ID};

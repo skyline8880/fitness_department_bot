@@ -114,6 +114,7 @@ class Database():
             photo_id,
             name,
             description,
+            executor,
             isfree
         ) = list(data.values())
         _isfree = True
@@ -133,6 +134,7 @@ class Database():
                     f'{Event.DESCRIPTION}': description,
                     f'{Event.ISFREE}': _isfree,
                     f'{Event.PHOTOID}': photo_id,
+                    f'{Event.EXECUTOR}': executor,
                     })
             event = await cur.fetchone()
         except Exception as e:
