@@ -31,7 +31,8 @@ async def send_bitrix_request(
         event_isfree,
         event_isactive,
         event_sent,
-        _
+        _,
+        executor
     ) = await db.select_event_by_id(event_id=event_id)
     (
         user_id,
@@ -55,7 +56,7 @@ async def send_bitrix_request(
         customer_id=telegram_id)
     bx24 = await Bitrix24(department_sign=department_id).collect()
     comment = (
-            f'пользователь выбрал активность: {act_name}')
+            f'Пользователь выбрал активность: {act_name}')
     if deal_id is None:
         if int(act_id) == 2:
             return
@@ -101,7 +102,8 @@ async def send_bitrix_request(
             f'выбрал активность: {act_name}\n'
             f'по мероприятию: {event_name}\n'
             f'которое будет проходить: {date} в {time}\n'
-            f'в подразделении: {subdivision}')
+            f'в подразделении: {subdivision}\n'
+            f'исполнитель: {executor}')
     else:
         if int(act_id) == 2:
             await bx24.update_deal(

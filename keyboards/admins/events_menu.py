@@ -98,7 +98,8 @@ def current_event_keyboard(event_data):
         event_isfree,
         event_isactive,
         event_sent,
-        photo_id
+        photo_id,
+        executor
     ) = event_data
     buttons = []
     # event_id = int(event_id)

@@ -70,6 +70,7 @@ class Paginator():
             _,  # is_active,
             _,  # sent,
             _,  # photo_id
+            _   # executor
         ) in self.event_list[start:end]:
             event_list_buttons.append(
                 [

@@ -82,7 +82,7 @@ INSERT_INTO_EVENT = f'''
         %({Event.NAME})s,
         %({Event.DESCRIPTION})s,
         %({Event.ISFREE})s,
-        %({Event.PHOTOID})s
+        %({Event.PHOTOID})s,
         %({Event.EXECUTOR})s
     )
     RETURNING

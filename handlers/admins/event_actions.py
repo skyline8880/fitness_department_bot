@@ -262,8 +262,8 @@ async def event_datepick_actions(
         day=int(day))
     if date < dt.datetime.now():
         return await query.answer(
-            f'Недопустимое значение: {day}.{month}.{year}!')
-    await query.answer(f'{int(day):02d}.{int(month):02d}.{int(year)}')
+            f'Недопустимое значение: {date:%d.%m.%Y}!')
+    await query.answer(f'{date:%d.%m.%Y}')
     await bot.clear_messages(message=query, state=state, finish=False)
     await query.message.answer(
         text=event_choose_hour(),
@@ -307,7 +307,7 @@ async def event_timeminute_actions(
         second=0)
     if date < dt.datetime.now():
         return await query.answer(
-            f'Недопустимое значение: {day}.{month}.{year} {hour}:{minute}!')
+            f'Недопустимое значение: {date:%d.%m.%Y %H:%M}!')
     await state.update_data(event_date=date)
     # await state.update_data(start_message=query.message.message_id)
     await state.set_state(AddEventAdmin.photo)
@@ -411,6 +411,24 @@ async def get_event_executor(message: Message, state: FSMContext) -> None:
     await message.answer(
         text=event_choose_is_free(),
         reply_markup=free_type_keyboard())
+
+
+@router.message(AddEventAdmin.executor, ~IsText(), IsAdmin(), IsPrivate())
+async def get_wrong_event_executor(
+        message: Message, state: FSMContext) -> None:
+    m_id = message.message_id + 1
+    try:
+        await message.delete()
+    except Exception as e:
+        print(f'wrong message delete error {e}')
+    await message.answer(text=wrong_executor())
+    await sleep(5)
+    try:
+        await bot.delete_message(
+            chat_id=message.from_user.id,
+            message_id=m_id)
+    except Exception as e:
+        print(f'message was deleted by user {e}')
 
 
 @router.message(
