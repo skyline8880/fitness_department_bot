@@ -26,6 +26,7 @@ class TelegramSectrets:
     BOT_TOKEN = os.getenv('BOT_TOKEN')
     BOT_USERNAME = os.getenv('BOT_USERNAME')
     DEVELOPER = int(os.getenv('DEVELOPER'))
+    GROUP_ID = int(os.getenv('GROUP_ID'))
 
 
 class BitrixSecrets():

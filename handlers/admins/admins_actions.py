@@ -10,6 +10,7 @@ from bot.message.admins.actions import action_message
 from bot.message.admins.admin_menu import (add_admin_result_message,
                                            add_remove_admin_message,
                                            exist_admin_result_message,
+                                           messages_placeholder_text,
                                            not_exist_admin_result_message,
                                            remove_admin_result_message,
                                            wrong_admin_phone_message)
@@ -64,6 +65,17 @@ async def get_admins_phone(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     action = data['action']
     if action == AdminsActions.ADD.value:
+        try:
+            await bot.unban_chat_member(
+                chat_id=await bot.get_group_id(),
+                user_id=get_user[6],
+                only_if_banned=True)
+            group = await bot.get_chat(chat_id=await bot.get_group_id())
+            await bot.send_message(
+                chat_id=get_user[6],
+                text=messages_placeholder_text(group.invite_link))
+        except Exception as e:
+            print(f'error send link: {e}')
         is_allowed = True
         msg = add_admin_result_message(phone=phone)
         if get_user is not None:
@@ -79,20 +91,17 @@ async def get_admins_phone(message: Message, state: FSMContext) -> None:
                 text=action_message(action=AdminMenu.ADMINS.value),
                 reply_markup=admins_keydoard()
             )
-            """ return await bot.edit_message_text(
-                chat_id=message.from_user.id,
-                message_id=int(data['start_message']),
-                text=msg,
-                reply_markup=back_to_admins()) """
         await message.answer(text=msg)
         await sleep(5)
-        try:
-            await bot.delete_message(
-                chat_id=message.from_user.id,
-                message_id=m_id)
-        except Exception:
-            pass
         return
+    try:
+        await bot.ban_chat_member(
+            chat_id=await bot.get_group_id(),
+            user_id=get_user[6])
+    except Exception as e:
+        print(f'error ban user: {e}')
+    await bot.clear_messages(
+        message=message, state=state, finish=True)
     is_allowed = True
     msg = remove_admin_result_message(phone=phone)
     if get_user is None:
@@ -104,8 +113,6 @@ async def get_admins_phone(message: Message, state: FSMContext) -> None:
             msg = not_exist_admin_result_message(phone=phone)
     if is_allowed:
         await db.update_user_is_admin_status(phone=phone, is_admin=False)
-        await bot.clear_messages(
-            message=message, state=state, finish=True)
         await message.answer(text=msg)
         return await message.answer(
             text=action_message(action=AdminMenu.ADMINS.value),
@@ -119,7 +126,6 @@ async def get_admins_phone(message: Message, state: FSMContext) -> None:
             message_id=m_id)
     except Exception:
         pass
-    return
 
 
 @router.message(

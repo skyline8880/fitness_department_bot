@@ -132,3 +132,7 @@ def remove_admin_result_message(phone):
             markdown.markdown_decoration.quote(
                 'Успешно удалён как администратор!')),
         sep='\n')
+
+
+def messages_placeholder_text(msg):
+    return markdown.markdown_decoration.quote(msg)

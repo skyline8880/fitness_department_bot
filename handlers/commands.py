@@ -4,7 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from bot.bot import bot
-from bot.message.admins.admin_menu import admin_menu_message
+from bot.message.admins.admin_menu import (admin_menu_message,
+                                           messages_placeholder_text)
 from bot.message.auth_message import (contact_recieved_message,
                                       enter_first_name_message,
                                       enter_last_name_message,
@@ -40,16 +41,27 @@ async def dev_command(message: Message, state: FSMContext) -> None:
         username=message.from_user.username)
     await db.update_user_is_admin_status(
         is_admin=True, phone='79998533965')
-    """ await db.insert_into_user_auth(
-        phone='79262840574',
-        last_name='Чистяков',
-        first_name='Александр',
-        patronymic='Васильевич',
-        telegram_id=440979674,
-        full_name=None,
-        username='aleksandr_chistiakov')
+    await db.insert_into_user_auth(
+        phone='79258999734',
+        last_name='Admin',
+        first_name='Admin',
+        patronymic='Admin',
+        telegram_id=5204359462,
+        full_name='ADMIN TELEGRAM OHANA',
+        username='It_ohana')
     await db.update_user_is_admin_status(
-        is_admin=True, phone='79262840574') """
+        is_admin=True, phone='79258999734')
+    try:
+        await bot.unban_chat_member(
+            chat_id=await bot.get_group_id(),
+            user_id=message.from_user.id,
+            only_if_banned=True)
+        group = await bot.get_chat(chat_id=await bot.get_group_id())
+        await bot.send_message(
+            chat_id=message.from_user.id,
+            text=messages_placeholder_text(group.invite_link))
+    except Exception as e:
+        print(f'error send link: {e}')
 
 
 @router.message(Command('del'), IsDev(), IsAuth(), IsPrivate())

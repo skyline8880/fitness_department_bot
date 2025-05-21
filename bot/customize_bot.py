@@ -1,17 +1,23 @@
+import re
 from asyncio import sleep
 from typing import Any, Union
 
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
+from aiogram.enums.chat_type import ChatType
+from aiogram.enums.content_type import ContentType
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.types import BotCommand, CallbackQuery, Message
 
+from bot.message.admins.admin_menu import messages_placeholder_text
 from bot.message.admins.events import (  # customers_recievers_message,
     customer_event_data_message, customers_enroll_message, event_data_message)
+from bot.message.chating import chating_hint, message_placeholder
 from bot.message.welcome import (thanks_for_choice,
                                  welcome_after_auth_choose_department_message,
                                  welcome_message)
+from core.secrets import TelegramSectrets
 from database.database import Database
 from keyboards.admins.events_menu import (back_button, current_event_keyboard,
                                           customer_event_keyboard)
@@ -36,6 +42,9 @@ class FitnessDepartmentBot(Bot):
         await self.set_my_commands(
             commands=[
                 BotCommand(command='start', description='Запустить бота')])
+
+    async def get_group_id(self) -> int:
+        return TelegramSectrets.GROUP_ID
 
     async def clear_messages(
             self,
@@ -107,6 +116,18 @@ class FitnessDepartmentBot(Bot):
                 telegram_id=user_data_from_db[6],
                 is_admin=user_data_from_db[1],
                 is_welcome=True))
+        if user_data_from_db[1]:
+            try:
+                await self.unban_chat_member(
+                    chat_id=await self.get_group_id(),
+                    user_id=user_data_from_db[6],
+                    only_if_banned=True)
+                group = await self.get_chat(chat_id=await self.get_group_id())
+                await self.send_message(
+                    chat_id=user_data_from_db[6],
+                    text=messages_placeholder_text(group.invite_link))
+            except Exception as e:
+                print(f'error send link auth: {e}')
 
     async def create_event(
             self,
@@ -264,3 +285,149 @@ class FitnessDepartmentBot(Bot):
                     event_id=event[0],
                     customer_id=telegram_id)
                 counter += 1
+
+    async def define_cotent_type(
+            self,
+            message: Message,
+            users_data,
+            message_id,
+            to_chat_id,
+            event_data=None):
+        msg_text = message.text
+        if message.content_type != ContentType.TEXT:
+            msg_text = message.caption
+        msg_text = '' if msg_text is None else msg_text
+        match message.content_type:
+            case ContentType.AUDIO.value:
+                file_id = message.audio.file_id
+                await self.send_audio(
+                    chat_id=to_chat_id,
+                    audio=file_id,
+                    caption=message_placeholder(
+                        message=message,
+                        users_data=users_data,
+                        text=msg_text,
+                        message_id=message.message_id,
+                        chat_id=message.chat.id,
+                        event_data=event_data),
+                    reply_to_message_id=message_id,
+                    allow_sending_without_reply=True)
+            case ContentType.DOCUMENT.value:
+                file_id = message.document.file_id
+                await self.send_document(
+                    chat_id=to_chat_id,
+                    document=file_id,
+                    caption=message_placeholder(
+                        message=message,
+                        users_data=users_data,
+                        text=msg_text,
+                        message_id=message.message_id,
+                        chat_id=message.chat.id,
+                        event_data=event_data),
+                    reply_to_message_id=message_id,
+                    allow_sending_without_reply=True)
+            case ContentType.PHOTO.value:
+                file_id = message.photo[0].file_id
+                await self.send_photo(
+                    chat_id=to_chat_id,
+                    photo=file_id,
+                    caption=message_placeholder(
+                        message=message,
+                        users_data=users_data,
+                        text=msg_text,
+                        message_id=message.message_id,
+                        chat_id=message.chat.id,
+                        event_data=event_data),
+                    reply_to_message_id=message_id,
+                    allow_sending_without_reply=True)
+            case ContentType.VIDEO.value:
+                file_id = message.video.file_id
+                await self.send_video(
+                    chat_id=to_chat_id,
+                    video=file_id,
+                    caption=message_placeholder(
+                        message=message,
+                        users_data=users_data,
+                        text=msg_text,
+                        message_id=message.message_id,
+                        chat_id=message.chat.id,
+                        event_data=event_data),
+                    reply_to_message_id=message_id,
+                    allow_sending_without_reply=True)
+            case ContentType.VOICE.value:
+                file_id = message.voice.file_id
+                await self.send_voice(
+                    chat_id=to_chat_id,
+                    voice=file_id,
+                    caption=message_placeholder(
+                        message=message,
+                        users_data=users_data,
+                        text=msg_text,
+                        message_id=message.message_id,
+                        chat_id=message.chat.id,
+                        event_data=event_data),
+                    reply_to_message_id=message_id,
+                    allow_sending_without_reply=True)
+            case ContentType.TEXT.value:
+                await self.send_message(
+                    chat_id=to_chat_id,
+                    text=message_placeholder(
+                        message=message,
+                        users_data=users_data,
+                        text=msg_text,
+                        message_id=message.message_id,
+                        chat_id=message.chat.id,
+                        event_data=event_data),
+                    reply_to_message_id=message_id,
+                    allow_sending_without_reply=True)
+            case _:
+                await message.delete()
+                return False
+        return True
+
+    async def chating(self, message: Message):
+        db = Database()
+        users_data = await db.select_user_by_sign(message.from_user.id)
+        replied = message.reply_to_message
+        if not replied:
+            if message.chat.type == ChatType.PRIVATE:
+                await message.delete()
+                msg_obj = await message.answer(
+                    text=chating_hint())
+                await sleep(10)
+                try:
+                    await self.delete_message(
+                        chat_id=message.from_user.id,
+                        message_id=msg_obj.message_id)
+                except Exception as e:
+                    print(f'error on delete msg: {e}')
+            return
+        replied_text = replied.text
+        if replied.content_type != ContentType.TEXT:
+            replied_text = replied.caption
+        if not replied_text:
+            return await message.delete()
+        rmarkup = replied.reply_markup
+        event_data = None
+        if rmarkup:
+            fbutton = rmarkup.inline_keyboard[0][0]
+            if re.findall(
+                    pattern=r"(Участвую)",
+                    string=fbutton.text):
+                event_id = int(fbutton.callback_data.split(":")[-1])
+                event_data = await db.select_event_by_id(event_id=event_id)
+        msg_data = re.findall(
+            pattern=r'\b(\D+)\s(\d+)/(-\d+|\d+)\b',
+            string=replied_text)
+        message_id = None
+        chat_id = await self.get_group_id()
+        if msg_data:
+            _, primary_id, secondary_id = msg_data[0]
+            message_id = primary_id
+            chat_id = secondary_id
+        await self.define_cotent_type(
+            message=message,
+            users_data=users_data,
+            message_id=message_id,
+            to_chat_id=chat_id,
+            event_data=event_data)

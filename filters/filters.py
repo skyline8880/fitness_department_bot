@@ -49,6 +49,15 @@ class IsPrivate(Filter):
         return current_chat_type == ChatType.PRIVATE.value
 
 
+class IsGroup(Filter):
+    async def __call__(self, message: Union[Message, CallbackQuery]) -> bool:
+        if isinstance(message, CallbackQuery):
+            current_chat = message.message.chat
+        else:
+            current_chat = message.chat
+        return current_chat.id == TelegramSectrets.GROUP_ID
+
+
 class IsText(Filter):
     async def __call__(self, message: Union[Message, CallbackQuery]) -> bool:
         return message.content_type == ContentType.TEXT.value
